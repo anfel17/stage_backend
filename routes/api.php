@@ -43,7 +43,8 @@ Route::post('/unseenStudentNotifNbr', [EtudiantController::class, 'unseenStudent
 Route::post('/seeStudentNotif', [EtudiantController::class, 'seeStudentNotif']);
 
 Route::post('/applicationInfo', [EtudiantController::class, 'applicationInfo']);
-Route::post('/EtatDemande', [EtudiantController::class, 'EtatDemande']);
+Route::post('/applicationsList', [EtudiantController::class, 'applicationsList']);
+
 Route::post('/consulterDemande', [EtudiantController::class, 'consulterDemande']);
 Route::delete('/deleteDemande', [EtudiantController::class, 'deleteDemande']);
 
@@ -56,12 +57,14 @@ Route::get('/refusedRequestList', [ChefController::class, 'refusedRequestList'])
 Route::get('/pendingRequestList', [ChefController::class, 'pendingRequestList']);
 
 Route::post('/createResAccount', [ChefController::class, 'createResAccount']);
-Route::get('/ResList', [ChefController::class, 'ResList']);
+Route::get('/resList', [ChefController::class, 'resList']);
 Route::post('/resInfo', [ChefController::class, 'resInfo']);
 Route::post('/changeResInfo', [ChefController::class, 'changeResInfo']);
 Route::delete('/deleteRes', [ChefController::class, 'deleteRes']);
 
 Route::get('/studentList', [ChefController::class, 'studentList']);
+Route::get('/listeStagiairs', [ChefController::class, 'listeStagiairs']);
+
 Route::post('/getStudentInfo', [ChefController::class, 'getStudentInfo']);
 Route::post('/changeStudentInfo', [ChefController::class, 'changeStudentInfo']);
 Route::delete('/deleteStudent', [ChefController::class, 'deleteStudent']);
@@ -95,7 +98,12 @@ Route::post('/marquerNotes', [ResponsableController::class,'marquerNotes']);
 Route::post('/marquerPresence', [ResponsableController::class,'marquerPresence']);
 
 Route::post('/creerOffreRes', [ResponsableController::class,'creerOffreRes']);
+Route::delete('/deleteOffer', [ResponsableController::class,'deleteOffer']);
+Route::post('/modifyOffer', [ResponsableController::class,'modifyOffer']);
 
-Route::post('/getResNotif', [ChefController::class, 'getResfNotif']);
-Route::post('/unseenResNotifNbr', [ChefController::class, 'unseenResNotifNbr']);
-Route::post('/seeResNotif', [ChefController::class, 'seeResNotif']);
+
+Route::post('/getResNotif', [ResponsableController::class, 'getResfNotif']);
+Route::post('/unseenResNotifNbr', [ResponsableController::class, 'unseenResNotifNbr']);
+Route::post('/seeResNotif', [ResponsableController::class, 'seeResNotif']);
+
+Route::post('/generatePDF', [ResponsableController::class, 'generatePDF']);

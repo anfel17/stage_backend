@@ -37,7 +37,7 @@ class EtudiantController extends Controller
 		 'tel_etudiant' => $request->tel,
 		 'num_carte' => $request->cardNumber,
 		 'diplome' => $request->diplome,
-		 'specialite' => $request->specialite ,
+		 'specialite' => $request->specialite,
 		 'id_departement'=>$Dep]);
 
 
@@ -125,21 +125,29 @@ class EtudiantController extends Controller
 
 		}
 
-		//add verification in case entreprise already exist in DB
+		
 		public function createApplication(request $request) {
-
+			$entrepriseExist = ENTREPRISE::where('nom_entreprise', $request->entrName)->exists();
+			if ($entrepriseExist) {
+			 $entreprise = ENTREPRISE::where('nom_entreprise', $request->entrName)->first();
+			 $entrepriseId = $entreprise->id_entreprise;
+			}else{
 			$entrepriseId = DB::table('ENTREPRISE') 
 						 ->insertGetId(['nom_entreprise'=>$request->entrName,
 						 'addresse_entreprise'=>$request->adrs,
 						 'tel_entreprise'=>$request->tel]);
+			}
+			$responsableId = DB::table('RESPONSABLE')
+			->insertGetId(['nom_responsable'=>$request->resLastName,
+			'prenom_responsable'=>$request->resFirstName,
+			'email_responsable'=>$request->resEmail,
+			'id_entreprise'=>$entrepriseId]);
 
 			 $offreId = DB::table('OFFRE') 
 						 ->insertGetId(['theme'=>$request->theme,
 						 'duree'=>$request->duree,
-						 'nom_res'=>$request->resLastName,
-						 'prenom_res'=>$request->resFirstName,
-						 'email_res'=>$request->resEmail,
 						 'id_entreprise'=>$entrepriseId,
+						 'id_responsable'=>$responsableId,
 						 'createur'=>'etudiant']);
 	
 				DB::table('STAGE')
@@ -150,19 +158,18 @@ class EtudiantController extends Controller
 				'id_offre'=>$offreId]);
 
            //Retrieving the chef's ID and full name to insert into the notification. 
-			$idChef= DB::table('DEPARTEMENT')
+			$info= DB::table('DEPARTEMENT')
+			     ->where('id_etudiant', '=',$request->idStudent)
 				 ->join('ETUDIANT', 'DEPARTEMENT.id_departement', '=', 'ETUDIANT.id_departement')
 				 ->join('CHEFDEPARTEMENT', 'DEPARTEMENT.id_departement', '=', 'CHEFDEPARTEMENT.id_departement')
-				 ->value('id_chef');
+				 ->select('nom_etudiant','prenom_etudiant','id_chef')
+				 ->get();
 
-				$fullName= Etudiant::where('id_etudiant', '=',$request->idStudent)
-                        ->select('nom_etudiant','prenom_etudiant')
-                        ->get();
-                $fullName = json_decode($fullName, true);
+                $info = json_decode($info, true);
 
-			  Notification::insert(['destinataire' => 'chef','id_destinataire' => $idChef,
+			  Notification::insert(['destinataire' => 'chef','id_destinataire' => $info[0]['id_chef'],
 			  'message' => 'you have a new request from '.
-			  $fullName[0]['nom_etudiant'].' '.$fullName[0]['prenom_etudiant'].'.']);
+			  $info[0]['nom_etudiant'].' '.$info[0]['prenom_etudiant'].'.']);
 	
 			return response()->json([
 				'msg' => 'information inserted successfuly',
@@ -180,6 +187,13 @@ class EtudiantController extends Controller
 			$idOffre=DB::table('STAGE')
 			->where('id_stage', '=',$request->id )
 			->value("id_offre");
+			$idResp =DB::table('OFFRE')
+			->where('id_offre', '=',$idOffre )
+			->value("id_responsable");
+			$idEntreprise =DB::table('OFFRE')
+			->where('id_offre', '=',$idOffre )
+			->value("id_entreprise");
+
 
 			$ajouterPar = OFFRE::where('id_offre', $idOffre)
 			->value('createur');
@@ -189,14 +203,42 @@ class EtudiantController extends Controller
 			->update(['date_debut'=>$request->dateD,'date_fin'=>$request->dateF]);
 		     
 			if($ajouterPar==="etudiant"){
+				DB::table('RESPONSABLE') 
+			->where('id_responsable', '=',$idResp )
+			->update(['nom_responsable'=>$request->resLastName,
+				'prenom_responsable'=>$request->resFirstName,
+				'email_responsable'=>$request->resEmail,
+			]);
+				DB::table('ENTREPRISE') 
+			->where('id_entreprise', '=',$idEntreprise )
+			->update(['nom_entreprise'=>$request->entrName,
+				'addresse_entreprise'=>$request->adrs,
+				'tel_entreprise'=>$request->tel,
+			]);
+
 			DB::table('OFFRE') 
 			->where('id_offre', '=',$idOffre )
 			->update(['theme'=>$request->theme,
 				'duree'=>$request->duree,
-				'nom_res'=>$request->resLastName,
-				'prenom_res'=>$request->resFirstName,
-			     'email_res'=>$request->resEmail]);
+			]);
 			}
+			 //Retrieving the chef's ID and full name to insert into the notification.
+			 $idEtud=DB::table('STAGE')
+			->where('id_stage', '=',$request->id )
+			->value("id_etudiant");
+
+			   $info= DB::table('DEPARTEMENT')
+			   ->where('id_etudiant', '=',$idEtud)
+			   ->join('ETUDIANT', 'DEPARTEMENT.id_departement', '=', 'ETUDIANT.id_departement')
+			   ->join('CHEFDEPARTEMENT', 'DEPARTEMENT.id_departement', '=', 'CHEFDEPARTEMENT.id_departement')
+			   ->select('nom_etudiant','prenom_etudiant','id_chef')
+			   ->get();
+			   
+			  $info = json_decode($info, true);
+
+			Notification::insert(['destinataire' => 'chef','id_destinataire' => $info[0]['id_chef'],
+			'message' => 
+			$info[0]['nom_etudiant'].' '.$info[0]['prenom_etudiant'].' has modified his/her application information']);
 			return response()->json([
 				'msg' => 'information updated successfuly',
 			]);
@@ -222,10 +264,10 @@ class EtudiantController extends Controller
 
 	public function consultOffersList(request $request) {
     	return DB::table('OFFRE')
-				->join('ENTREPRISE', 'OFFRE.id_entreprise', '=', 'ENTREPRISE.id_entreprise')
-				->join('RESPONSABLE', 'OFFRE.id_responsable', '=', 'RESPONSABLE.id_responsable')
+				// ->join('ENTREPRISE', 'OFFRE.id_entreprise', '=', 'ENTREPRISE.id_entreprise')
+				// ->join('RESPONSABLE', 'OFFRE.id_responsable', '=', 'RESPONSABLE.id_responsable')
 		        ->where('createur','=','responsable')
-		        ->select('theme','duree','description','deadline','photo_offre','nom_entreprise','nom_responsable','prenom_responsable')
+		        ->select('theme','duree','description','deadline','photo_offre')
     			->get();
         }
 	
@@ -253,15 +295,36 @@ class EtudiantController extends Controller
 
 	
 	public function applicationInfo(Request $request) {
-
-			return DB::table('STAGE')
-				->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
-				->join('ETUDIANT','STAGE.id_etudiant','=','ETUDIANT.id_etudiant')
-				->select('theme', 'duree', 'date_debut', 'date_fin',
+		$stage = DB::table('STAGE')
+			->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
+			->join('ETUDIANT','STAGE.id_etudiant','=','ETUDIANT.id_etudiant')
+			->select('theme', 'duree', 'date_debut', 'date_fin',
 				'nom_etudiant','prenom_etudiant','email_etudiant','diplome','specialite',
-			    'date_naissance','lieu_naissance','tel_etudiant','num_carte') 
-				->where('id_stage', '=', $request->id)
-				->get();
+				'date_naissance','lieu_naissance','tel_etudiant','num_carte') 
+			->where('id_stage', '=', $request->id)
+			->first();
+		
+		$etatChef = STAGE::where('id_stage', $request->id)
+			->select(['etat_chef'])
+			->get()
+			->value('etat_chef');
+		$etatRes = STAGE::where('id_stage', $request->id)
+			->select(['etat_responsable'])
+			->get()
+			->value('etat_responsable');
+		
+		if ($etatChef === "refuse" || $etatRes === "refuse") {
+			$status = 'refused';
+		} elseif ($etatRes === "accepte") {
+			$status = 'accepted';
+		} else {
+			$status = 'pending';
+		}
+		
+		return response()->json([
+			'application_info' => $stage,
+			'status' => $status,
+		]);
 	}
     
 	public function applicationsList(Request $request) {
@@ -271,41 +334,27 @@ class EtudiantController extends Controller
 			->select('theme','photo_offre')
 			->get();
 	}
-
-
-	public function EtatDemande(Request $request) {
-
-			$etatChef = STAGE::where('id_stage', $request->id)
-			       ->select(['etat_chef'])
-			       ->get()
-				   ->value('etat_chef');
-		    $etatRes = STAGE::where('id_stage', $request->id)
-			       ->select(['etat_responsable'])
-			       ->get()
-				   ->value('etat_responsable');
-				   
-			if($etatChef==="refuse" || $etatRes==="refuse"){
-				return response()->json([
-					'msg' => 'refused',
-				]);
-			}
-			elseif($etatRes==="accepte"){
-				return response()->json([
-					'msg' => 'accepted',
-				]);
-			}
-			else{
-				return response()->json([
-					'msg' => 'pending',
-				]);
-			}
-		}
 	
 		public function deleteDemande(request $request){
+			$id =STAGE::where('id_stage',$request->id)
+			->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
+			->select('OFFRE.id_offre','id_responsable','createur')
+			->get();
+
+			$id = json_decode($id,true);
+			if($id[0]['createur']==='etudiant'){
+			OFFRE::where('id_offre',$id[0]['id_offre'])
+					  ->delete();
+
+		    RESPONSABLE::where('id_responsable',$id[0]['id_responsable'])
+					  ->delete();
+			}
+
 			STAGE::where('id_stage',$request->id)
 					  ->delete();
+
 			return response()->json([
-				   'msg' => 'demande supprimé',
+				   'msg' => 'application deleted successfuly ',
 			   ]);
 		 }
 		}

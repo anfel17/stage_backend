@@ -71,7 +71,7 @@ class ChefController extends Controller
 
     //(send email to res after account creation)
     public function createResAccount(request $request){
-		
+		$password = Str::random(8);
 	
             $responsableExist = RESPONSABLE::where('email_responsable', $request->email)->exists();
             if ($responsableExist) {
@@ -81,37 +81,36 @@ class ChefController extends Controller
            $entrepriseExist = ENTREPRISE::where('nom_entreprise', $request->nom)->exists();
            if ($entrepriseExist) {
             $entreprise = ENTREPRISE::where('nom_entreprise', $request->nom)->first();
-            $entreprise_id = $entreprise->id_entreprise;
-
-            RESPONSABLE::insert(['nom_responsable' => $request->firstName ,
-            'prenom_responsable' => $request->lastName,
-            'email_responsable' => $request->email,
-            'mdps_responsable'=>$request->password,
-            'photo_responsable' => $request->img,
-            'id_entreprise' => $entreprise_id]);
-            return response()->json([
-            'msg' => 'account created succesfuly',
-            ]);
+            $entrepriseId = $entreprise->id_entreprise;
         }else{
-            $EntrepriseId = DB::table('ENTREPRISE') 
+            $entrepriseId = DB::table('ENTREPRISE') 
             ->insertGetId(['nom_entreprise'=>$request->nom,
             'addresse_entreprise'=>$request->adrs,
             'tel_entreprise'=>$request->tel,
             ]);
+        }
+            
+            RESPONSABLE::insert(['nom_responsable' => $request->firstName ,
+            'prenom_responsable' => $request->lastName,
+            'email_responsable' => $request->email,
+            'mdps_responsable'=>$password,
+            'photo_responsable' => $request->img,
+            'id_entreprise' => $entrepriseId]);
 
-            RESPONSABLE::insert(['nom_responsable' => $request->firstName ,'prenom_responsable' => $request->lastName,
-            'email_responsable' => $request->email,'mdps_responsable'=>$request->password,
-            'photo_responsable' => $request->img,'id_entreprise' => $EntrepriseId]);
+            Mail::to($request->email)->send(new Email($password));
+
             return response()->json([
             'msg' => 'account created succesfuly',
             ]);
+        
         }
-	}
+	
    
      public function resList(request $request) {
 		return DB::table('RESPONSABLE')
 				 ->join('ENTREPRISE', 'ENTREPRISE.id_entreprise', '=', 'RESPONSABLE.id_entreprise')
 				 ->select(['nom_responsable','prenom_responsable'])
+                 ->where('is_active','=','1')
 				 ->get();
 	}
 
@@ -139,6 +138,14 @@ class ChefController extends Controller
 				 ->select(['nom_etudiant','prenom_etudiant'])
 				 ->get();
 	}
+    public function listeStagiairs(request $request) {
+        return DB::table('STAGE')
+                ->where('etat_responsable','accepte')
+                ->join('ETUDIANT', 'ETUDIANT.id_etudiant', '=','STAGE.id_etudiant')
+                 ->select('nom_etudiant','prenom_etudiant')
+                 ->orderby('nom_etudiant', 'asc')
+                 ->get();
+    }
 
 
   
@@ -270,24 +277,32 @@ class ChefController extends Controller
                         ->select('nom_etudiant','prenom_etudiant')
                         ->get();
             $fullName = json_decode($fullName, true);
-                        
-            $idOffre=DB::table('STAGE')
+
+            $id=DB::table('STAGE')
                       ->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
                       ->where('id_stage', '=',$request->id)
-                      ->value('OFFRE.id_offre');
-                       
-            $email=DB::table('OFFRE')
-                        ->where('id_offre', '=',$idOffre)
-                        ->value('email_res');
+                      ->select('OFFRE.id_offre','id_responsable')
+                      ->get();
+
+            $id = json_decode($id, true);           
+          
+            $email=DB::table('RESPONSABLE')
+                        ->where('id_responsable', '=',$id[0]['id_responsable'])
+                        ->value('email_responsable');
                        
            $ResExist = RESPONSABLE::where('email_responsable', $email)
+                       ->where('is_active','=','1')
                        ->first();
                        
          if($ResExist){
                     $idResp=$ResExist-> id_responsable;
                     $idEntr=$ResExist-> id_entreprise;
-                           
-                    OFFRE::where('OFFRE.id_offre', '=',$idOffre)
+                    
+                    DB::table('RESPONSABLE')
+                      ->where('id_responsable','=', $id[0]['id_responsable'])
+                      ->delete();
+
+                    OFFRE::where('OFFRE.id_offre', '=',$id[0]['id_offre'])
                     ->update(['id_responsable' =>$idResp,
                     'id_entreprise'=>$idEntr]);
                            
@@ -307,27 +322,24 @@ class ChefController extends Controller
 
             $password = Str::random(8);
 
-            $idOffre=DB::table('STAGE')
+            $idOffre =DB::table('STAGE')
                     ->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
                     ->where('id_stage', '=',$request->id)
                     ->value('OFFRE.id_offre');
 
-            $infoRes = DB::table('OFFRE') 
-                    ->select(['nom_res', 'prenom_res','email_res','id_entreprise'])
+            $idRes = DB::table('OFFRE') 
                     ->where('id_offre','=',$idOffre)
-                    ->get();
-                         $info = json_decode($infoRes, true);
-            
-                        $idRes = RESPONSABLE::insertGetId(['nom_responsable' =>  $info[0]['nom_res'] ,
-                        'prenom_responsable' =>  $info[0]['prenom_res'],
-                        'email_responsable' =>  $info[0]['email_res'],
-                        'mdps_responsable'=>$password,
-                        'id_entreprise' =>  $info[0]['id_entreprise']]);
+                    ->value('id_responsable');
+                        
+                    $email = RESPONSABLE::where('id_responsable','=', $idRes )
+                    ->value('email_responsable');
 
-                        OFFRE::where('id_offre','=',$idOffre)
-                           ->update(['id_responsable' => $idRes]);
+                        RESPONSABLE::where('id_responsable','=', $idRes )
+                        ->update(['mdps_responsable'=>$password,
+                        'is_active' =>  '1']);
 
-                        Mail::to($info[0]['email_res'])->send(new Email($password));
+
+                        Mail::to($email)->send(new Email($password));
 
                         $fullName= STAGE::where('id_stage', '=',$request->id)
                         ->join('ETUDIANT', 'ETUDIANT.id_etudiant', '=', 'STAGE.id_etudiant')
@@ -348,11 +360,19 @@ class ChefController extends Controller
             STAGE::where('id_stage', '=',$request->id)
                  ->update(['etat_chef' =>'refuse']);
 
-            $studentId = STAGE::where('id_stage', '=',$request->id)
+            $info = STAGE::where('id_stage', '=',$request->id)
                 ->join('ETUDIANT', 'ETUDIANT.id_etudiant', '=', 'STAGE.id_etudiant')
-                ->value('ETUDIANT.id_etudiant');
-    
-                Notification::insert(['destinataire' => 'etudiant','id_destinataire' => $studentId,'message' => 'One request has been rejected']);
+                ->join('OFFRE','OFFRE.id_offre','=','STAGE.id_offre')
+                ->select('ETUDIANT.id_etudiant','theme')
+                ->get();
+
+                $info = json_decode($info, true);
+                Notification::insert(['destinataire' => 'etudiant',
+                'id_destinataire' =>$info[0]['id_etudiant'],
+                'message' => 'your request of '.$info[0]['theme'].' has been rejected by the department Manager']);
+                // return response()->json([
+                //     'msg' => 'request has been rejected ',
+                //     ]);
     }
 
     public function sendMotif(request $request) {

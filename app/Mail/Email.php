@@ -32,7 +32,7 @@ class Email extends Mailable
     public function envelope()
     {
         return new Envelope(
-            subject: 'Email',
+            subject: 'Welcome to internify: Your Account Has Been Created!',
         );
     }
 
