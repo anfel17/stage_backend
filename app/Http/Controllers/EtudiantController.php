@@ -29,8 +29,8 @@ class EtudiantController extends Controller
 
 		 ETUDIANT::insert(['nom_etudiant' => $request->firstName,
 		 'prenom_etudiant' => $request->lastName,
-		 'email_etudiant' => $request->email,
-		 'mdps_etudiant'=>$request->pswd,
+		 'email' => $request->email,
+		 'password'=>$request->pswd,
 		 'photo_etudiant' => $request->img,
 		 'date_naissance' => $request->birthDate,
 		 'lieu_naissance' => $request->birthPlace,
@@ -54,8 +54,8 @@ class EtudiantController extends Controller
 				 ->join('FACULTE', 'FACULTE.id_faculte', '=', 'DEPARTEMENT.id_faculte')
 				 ->join('UNIVERSITE', 'FACULTE.id_universite', '=', 'UNIVERSITE.id_universite')
 				 ->where('id_etudiant', '=',$request->id )
-				 ->select(['nom_etudiant','prenom_etudiant','email_etudiant',
-				 'mdps_etudiant','diplome','specialite','photo_etudiant',
+				 ->select(['nom_etudiant','prenom_etudiant','email',
+				 'password','diplome','specialite','photo_etudiant',
 				 'date_naissance','lieu_naissance','tel_etudiant','num_carte',
 				 'nom_faculte','nom_universite','nom_departement'])
 				 ->get();
@@ -66,12 +66,12 @@ class EtudiantController extends Controller
 
 		$Etud = Etudiant::where('id_etudiant', $request->id)->get();
          
-		 if($request->currentPassword === $Etud[0]['mdps_etudiant']){
+		 if($request->currentPassword === $Etud[0]['password']){
 			  DB::table('ETUDIANT')
 			  ->where('id_etudiant','=',$request->id )
 			  ->update(['nom_etudiant'=>$request->firstName,
 			  'prenom_etudiant'=>$request->lastName,
-			  'email_etudiant'=>$request->email,
+			  'email'=>$request->email,
 			  'specialite'=>$request->specialite,
 			  'tel_etudiant'=>$request->tel,
 			  'date_naissance'=>$request->birthDate,
@@ -80,7 +80,7 @@ class EtudiantController extends Controller
 			  if($request->newPassword != "" ) {
 
 				 Etudiant::where('id_etudiant',$request->id)
-							 ->update(['mdps_etudiant' => $request->newPassword]);
+							 ->update(['password' => $request->newPassword]);
 			 } 
 			 }
 			 else  return response()->json([
@@ -140,7 +140,7 @@ class EtudiantController extends Controller
 			$responsableId = DB::table('RESPONSABLE')
 			->insertGetId(['nom_responsable'=>$request->resLastName,
 			'prenom_responsable'=>$request->resFirstName,
-			'email_responsable'=>$request->resEmail,
+			'email'=>$request->resEmail,
 			'id_entreprise'=>$entrepriseId]);
 
 			 $offreId = DB::table('OFFRE') 
@@ -207,7 +207,7 @@ class EtudiantController extends Controller
 			->where('id_responsable', '=',$idResp )
 			->update(['nom_responsable'=>$request->resLastName,
 				'prenom_responsable'=>$request->resFirstName,
-				'email_responsable'=>$request->resEmail,
+				'email'=>$request->resEmail,
 			]);
 				DB::table('ENTREPRISE') 
 			->where('id_entreprise', '=',$idEntreprise )
@@ -299,7 +299,7 @@ class EtudiantController extends Controller
 			->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
 			->join('ETUDIANT','STAGE.id_etudiant','=','ETUDIANT.id_etudiant')
 			->select('theme', 'duree', 'date_debut', 'date_fin',
-				'nom_etudiant','prenom_etudiant','email_etudiant','diplome','specialite',
+				'nom_etudiant','prenom_etudiant','email','diplome','specialite',
 				'date_naissance','lieu_naissance','tel_etudiant','num_carte') 
 			->where('id_stage', '=', $request->id)
 			->first();

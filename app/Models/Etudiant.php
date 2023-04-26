@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Auth\Authenticatable as AuthenticableTrait;
 
-class Etudiant extends Model
+class Etudiant extends Model implements Authenticatable
 {
-    use HasFactory;
+    use HasFactory, AuthenticableTrait;
+
     protected $table = 'ETUDIANT';
     public const CREATED_AT = null;
     public const UPDATED_AT = null;

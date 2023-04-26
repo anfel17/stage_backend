@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EtudiantController;
 use App\Http\Controllers\ResponsableController;
 use App\Http\Controllers\ChefController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes

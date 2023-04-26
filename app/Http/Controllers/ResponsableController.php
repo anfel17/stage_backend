@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Dompdf\Dompdf;
 use Barryvdh\DomPDF\Facade\Pdf; 
-
 use App\Models\Etudiant;
 use App\Models\Attestation;
 use App\Models\Chef;
@@ -76,7 +75,7 @@ public function InfoResp(request $request) {
             ->join('ENTREPRISE', 'RESPONSABLE.id_entreprise', '=',
              'ENTREPRISE.id_entreprise')
 		    ->select('nom_entreprise','tel_entreprise','addresse_entreprise',
-            'nom_responsable','prenom_responsable','email_responsable','photo_responsable')
+            'nom_responsable','prenom_responsable','email','photo_responsable')
             ->where('RESPONSABLE.id_responsable','=',$request->id)
             ->get();
  }
@@ -86,7 +85,7 @@ public function changeInfoResp(request $request){
 
       $Resp = RESPONSABLE::where('id_responsable', $request->id)->get();
 
-	   if($request->currentMdps === $Resp[0]['mdps_responsable']){
+	   if($request->currentMdps === $Resp[0]['password']){
 
            $ENTREPRISE= DB::table('RESPONSABLE')
           ->where('id_responsable', '=',$request->id )
@@ -99,14 +98,14 @@ public function changeInfoResp(request $request){
        
       RESPONSABLE::where('id_responsable','=', $request->id)
       ->update(['nom_responsable' => $request->lastName ,'prenom_responsable' => $request->firstName,
-      'email_responsable' => $request->email,
+      'email' => $request->email,
       'photo_responsable' => $request->img, "id_entreprise"=>$ENTREPRISE]);
       
  
       if($request->newPassword != "" ) {
          // The new password is valid
          RESPONSABLE::where('id_responsable',$request->id)
-                     ->update(['mdps_responsable' => $request->newPassword]);
+                     ->update(['password' => $request->newPassword]);
      } 
     }
  

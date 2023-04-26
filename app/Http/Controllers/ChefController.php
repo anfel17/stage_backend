@@ -73,7 +73,7 @@ class ChefController extends Controller
     public function createResAccount(request $request){
 		$password = Str::random(8);
 	
-            $responsableExist = RESPONSABLE::where('email_responsable', $request->email)->exists();
+            $responsableExist = RESPONSABLE::where('email', $request->email)->exists();
             if ($responsableExist) {
             return response()->json(['error' => 'The provided email address is already associated with an existing account'], 400);
             }
@@ -92,8 +92,8 @@ class ChefController extends Controller
             
             RESPONSABLE::insert(['nom_responsable' => $request->firstName ,
             'prenom_responsable' => $request->lastName,
-            'email_responsable' => $request->email,
-            'mdps_responsable'=>$password,
+            'email' => $request->email,
+            'password'=>$password,
             'photo_responsable' => $request->img,
             'id_entreprise' => $entrepriseId]);
 
@@ -128,7 +128,7 @@ class ChefController extends Controller
 				 ->join('FACULTE', 'FACULTE.id_faculte', '=', 'DEPARTEMENT.id_faculte')
 				 ->join('UNIVERSITE', 'FACULTE.id_universite', '=', 'UNIVERSITE.id_universite')
 				 ->where('id_etudiant', '=',$request->id )
-				 ->select(['nom_etudiant','prenom_etudiant','email_etudiant','mdps_etudiant','diplome','specialite','photo_etudiant',
+				 ->select(['nom_etudiant','prenom_etudiant','email','password','diplome','specialite','photo_etudiant',
 				 'date_naissance','lieu_naissance','tel_etudiant','num_carte','nom_faculte','nom_universite','nom_departement'])
 				 ->get();
 	}
@@ -153,13 +153,13 @@ class ChefController extends Controller
 
 		if($request->password != "" ){
             Etudiant::where('id_etudiant',$request->id)
-							 ->update(['mdps_etudiant' => $request->password]);
+							 ->update(['password' => $request->password]);
         }
 			  DB::table('ETUDIANT')
 			  ->where('id_etudiant', '=',$request->id )
 			  ->update(['nom_etudiant'=>$request->newName,
 			  'prenom_etudiant'=>$request->newLastName,
-			  'email_etudiant'=>$request->newEmail,
+			  'email'=>$request->newEmail,
               'specialite'=>$request->newSpecialite,
 			  'tel_etudiant'=>$request->newTel,
               'date_naissance'=>$request->newDate,
@@ -174,7 +174,7 @@ class ChefController extends Controller
 
                 if($request->password != "" ){
                     Responsable::where('id_responsable',$request->id)
-                                     ->update(['mdps_responsable' => $request->password]);
+                                     ->update(['password' => $request->password]);
                 }
 
                 $EntrepriseId=DB::table('RESPONSABLE')
@@ -191,8 +191,8 @@ class ChefController extends Controller
                  ->where('id_responsable', '=',$request->id )
                  ->update(['nom_responsable' => $request->firstName ,
                  'prenom_responsable' => $request->lastName,
-                 'email_responsable' => $request->email,
-                 'mdps_responsable'=>$request->pswd,
+                 'email' => $request->email,
+                 'password'=>$request->pswd,
                  'photo_responsable' => $request->img,
                  'id_entreprise' => $EntrepriseId]);
                      
@@ -253,18 +253,18 @@ class ChefController extends Controller
             return DB::table('CHEFDEPARTEMENT')
                  ->join('DEPARTEMENT', 'DEPARTEMENT.id_departement', '=', 'CHEFDEPARTEMENT.id_departement')
                                     
-                 ->select('nom_chef','prenom_chef','email_chef','photo_chef','nom_departement')
+                 ->select('nom_chef','prenom_chef','email','photo_chef','nom_departement')
                 ->where('id_chef', '=',$request->id )
                 ->get(); 
      }
                         
-                      
+                      //zidi modifier password 
     public function changeChefInfo(request $request) {
            DB::table('CHEFDEPARTEMENT')
                 ->where('id_chef', '=',$request->id )
                 ->join('DEPARTEMENT', 'DEPARTEMENT.id_departement', '=', 'CHEFDEPARTEMENT.id_departement')
                 ->update(['nom_chef'=> $request->nom,'prenom_chef'=> $request->prenom,
-                         'email_chef'=> $request->email,'photo_chef'=> $request->img]);
+                         'email'=> $request->email,'photo_chef'=> $request->img]);
              return response()->json(['msg' => 'informations updated successfully',]);
                          }
                      
@@ -288,9 +288,9 @@ class ChefController extends Controller
           
             $email=DB::table('RESPONSABLE')
                         ->where('id_responsable', '=',$id[0]['id_responsable'])
-                        ->value('email_responsable');
+                        ->value('email');
                        
-           $ResExist = RESPONSABLE::where('email_responsable', $email)
+           $ResExist = RESPONSABLE::where('email', $email)
                        ->where('is_active','=','1')
                        ->first();
                        
@@ -332,10 +332,10 @@ class ChefController extends Controller
                     ->value('id_responsable');
                         
                     $email = RESPONSABLE::where('id_responsable','=', $idRes )
-                    ->value('email_responsable');
+                    ->value('email');
 
                         RESPONSABLE::where('id_responsable','=', $idRes )
-                        ->update(['mdps_responsable'=>$password,
+                        ->update(['password'=>$password,
                         'is_active' =>  '1']);
 
 

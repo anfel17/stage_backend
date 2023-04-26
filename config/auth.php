@@ -38,7 +38,22 @@ return [
     'guards' => [
         'web' => [
             'driver' => 'session',
-            'provider' => 'users',
+            'provider' => 'users', // Update the provider for the default web guard if needed
+        ],
+
+        'chefdepartement' => [
+            'driver' => 'session',
+            'provider' => 'chefdepartement', // Update with the appropriate model for ChefDepartemt user type
+        ],
+
+        'etudiant' => [
+            'driver' => 'session',
+            'provider' => 'etudiant', // Update with the appropriate model for Etudiant user type
+        ],
+
+        'responsable' => [
+            'driver' => 'session',
+            'provider' => 'responsable', // Update with the appropriate model for Responsable user type
         ],
     ],
 
@@ -64,11 +79,19 @@ return [
             'driver' => 'eloquent',
             'model' => App\Models\User::class,
         ],
-
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
+        'chefdepartement' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Chef::class,
+        ],
+        'etudiant' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Etudiant::class,
+        ],
+        'responsable' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Responsable::class,
+        ],
+        
     ],
 
     /*
