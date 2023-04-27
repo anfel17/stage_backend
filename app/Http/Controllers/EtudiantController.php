@@ -19,13 +19,13 @@ use App\Models\Universite;
 
 class EtudiantController extends Controller
 {
-	
+
 	public function createAccount(request $request){
-		
+
 		$Dep = DB::table('DEPARTEMENT')
 				->where('DEPARTEMENT.nom_departement','=',$request->depName)
 				->value('id_departement');
-		
+
 
 		 ETUDIANT::insert(['nom_etudiant' => $request->firstName,
 		 'prenom_etudiant' => $request->lastName,
@@ -48,7 +48,7 @@ class EtudiantController extends Controller
 
 
 	public function consultStudentAccount(request $request) {
-		
+
 		return DB::table('ETUDIANT')
 				 ->join('DEPARTEMENT', 'DEPARTEMENT.id_departement', '=', 'ETUDIANT.id_departement')
 				 ->join('FACULTE', 'FACULTE.id_faculte', '=', 'DEPARTEMENT.id_faculte')
@@ -61,11 +61,11 @@ class EtudiantController extends Controller
 				 ->get();
 	}
 
-	
+
 	public function modifyStudentAccount(request $request) {
 
 		$Etud = Etudiant::where('id_etudiant', $request->id)->get();
-         
+
 		 if($request->currentPassword === $Etud[0]['password']){
 			  DB::table('ETUDIANT')
 			  ->where('id_etudiant','=',$request->id )
@@ -81,16 +81,16 @@ class EtudiantController extends Controller
 
 				 Etudiant::where('id_etudiant',$request->id)
 							 ->update(['password' => $request->newPassword]);
-			 } 
+			 }
 			 }
 			 else  return response()->json([
 				 'msg' => 'wrong password',
 			 ]);
-			 
+
 			 return response()->json([
 				 'msg' => 'information updated successfully',
 			 ]);
-			 
+
 			}
 
 		public function applyForInternship(request $request) {
@@ -125,14 +125,14 @@ class EtudiantController extends Controller
 
 		}
 
-		
+
 		public function createApplication(request $request) {
 			$entrepriseExist = ENTREPRISE::where('nom_entreprise', $request->entrName)->exists();
 			if ($entrepriseExist) {
 			 $entreprise = ENTREPRISE::where('nom_entreprise', $request->entrName)->first();
 			 $entrepriseId = $entreprise->id_entreprise;
 			}else{
-			$entrepriseId = DB::table('ENTREPRISE') 
+			$entrepriseId = DB::table('ENTREPRISE')
 						 ->insertGetId(['nom_entreprise'=>$request->entrName,
 						 'addresse_entreprise'=>$request->adrs,
 						 'tel_entreprise'=>$request->tel]);
@@ -143,13 +143,13 @@ class EtudiantController extends Controller
 			'email'=>$request->resEmail,
 			'id_entreprise'=>$entrepriseId]);
 
-			 $offreId = DB::table('OFFRE') 
+			 $offreId = DB::table('OFFRE')
 						 ->insertGetId(['theme'=>$request->theme,
 						 'duree'=>$request->duree,
 						 'id_entreprise'=>$entrepriseId,
 						 'id_responsable'=>$responsableId,
 						 'createur'=>'etudiant']);
-	
+
 				DB::table('STAGE')
 				->insert(['date_debut'=>$request->dateD,
 				'date_fin'=>$request->dateF,
@@ -157,7 +157,7 @@ class EtudiantController extends Controller
 				'id_etudiant'=>$request->idStudent,
 				'id_offre'=>$offreId]);
 
-           //Retrieving the chef's ID and full name to insert into the notification. 
+           //Retrieving the chef's ID and full name to insert into the notification.
 			$info= DB::table('DEPARTEMENT')
 			     ->where('id_etudiant', '=',$request->idStudent)
 				 ->join('ETUDIANT', 'DEPARTEMENT.id_departement', '=', 'ETUDIANT.id_departement')
@@ -170,7 +170,7 @@ class EtudiantController extends Controller
 			  Notification::insert(['destinataire' => 'chef','id_destinataire' => $info[0]['id_chef'],
 			  'message' => 'you have a new request from '.
 			  $info[0]['nom_etudiant'].' '.$info[0]['prenom_etudiant'].'.']);
-	
+
 			return response()->json([
 				'msg' => 'information inserted successfuly',
 			]);
@@ -179,7 +179,7 @@ class EtudiantController extends Controller
 		public function modifyApplication(request $request) {
 			$etatChef = STAGE::where('id_stage', $request->id)
 			->value('etat_chef');
-		
+
 			$etatRes = STAGE::where('id_stage', $request->id)
 			->value('etat_responsable');
 
@@ -201,22 +201,22 @@ class EtudiantController extends Controller
 			DB::table('STAGE')
 			->where('id_stage', '=',$request->id )
 			->update(['date_debut'=>$request->dateD,'date_fin'=>$request->dateF]);
-		     
+
 			if($ajouterPar==="etudiant"){
-				DB::table('RESPONSABLE') 
+				DB::table('RESPONSABLE')
 			->where('id_responsable', '=',$idResp )
 			->update(['nom_responsable'=>$request->resLastName,
 				'prenom_responsable'=>$request->resFirstName,
 				'email'=>$request->resEmail,
 			]);
-				DB::table('ENTREPRISE') 
+				DB::table('ENTREPRISE')
 			->where('id_entreprise', '=',$idEntreprise )
 			->update(['nom_entreprise'=>$request->entrName,
 				'addresse_entreprise'=>$request->adrs,
 				'tel_entreprise'=>$request->tel,
 			]);
 
-			DB::table('OFFRE') 
+			DB::table('OFFRE')
 			->where('id_offre', '=',$idOffre )
 			->update(['theme'=>$request->theme,
 				'duree'=>$request->duree,
@@ -233,23 +233,23 @@ class EtudiantController extends Controller
 			   ->join('CHEFDEPARTEMENT', 'DEPARTEMENT.id_departement', '=', 'CHEFDEPARTEMENT.id_departement')
 			   ->select('nom_etudiant','prenom_etudiant','id_chef')
 			   ->get();
-			   
+
 			  $info = json_decode($info, true);
 
 			Notification::insert(['destinataire' => 'chef','id_destinataire' => $info[0]['id_chef'],
-			'message' => 
+			'message' =>
 			$info[0]['nom_etudiant'].' '.$info[0]['prenom_etudiant'].' has modified his/her application information']);
 			return response()->json([
 				'msg' => 'information updated successfuly',
 			]);
 		}
-		
+
 	}
 
 	public function consultAttendance(request $request) {
     	return DB::table('PRESENCE')
     		    ->where('id_etudiant', '=',$request->id )
-				->select('date','heure_entree','heure_sortie','remarque')
+				->select('id_presence','date','heure_entree','heure_sortie','remarque')
     			->get();
     }
 
@@ -260,16 +260,16 @@ class EtudiantController extends Controller
     			->get();
     }
 
-    
+
 
 	public function consultOffersList(request $request) {
     	return DB::table('OFFRE')
 		        ->where('createur','=','responsable')
-		        ->select('theme','duree','description','deadline','photo_offre')
+		        ->select('id_offre','theme','duree','description','deadline','photo_offre')
     			->get();
-				
+
         }
-	
+
 
 	public function getStudentNotif(request $request){
 	  return Notification::where('id_destinataire', '=',$request->id)
@@ -277,29 +277,29 @@ class EtudiantController extends Controller
 	   ->select(['message','timeStamp'])
 	   ->orderby('timeStamp' , 'DESC')
 	   ->get();
-    }    
+    }
 
     public function unseenStudentNotifNbr(request $request){
             return Notification::where('id_destinataire', '=',$request->id)
 			 ->where('destinataire', '=','etudiant')
              ->where('is_seen', '=',0)
              ->count();
-    }    
+    }
 
     public function seeStudentNotif(request $request){
             return Notification::where('id_destinataire', '=',$request->id)
 			->where('destinataire', '=','etudiant')
              ->update(['is_seen' => 1]);
-    }     
+    }
 
-	
+
 public function applicationInfo(Request $request) {
     $stage = DB::table('STAGE')
         ->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
         ->join('ETUDIANT','STAGE.id_etudiant','=','ETUDIANT.id_etudiant')
         ->select('theme', 'duree', 'date_debut', 'date_fin',
             'nom_etudiant','prenom_etudiant','email','diplome','specialite',
-            'date_naissance','lieu_naissance','tel_etudiant','num_carte') 
+            'date_naissance','lieu_naissance','tel_etudiant','num_carte')
         ->where('id_stage', '=', $request->id)
 		->get();
     return response()->json([
@@ -307,7 +307,7 @@ public function applicationInfo(Request $request) {
     ]);
 }
 
-    
+
 public function applicationsList(Request $request)
 {
     $applications = DB::table('STAGE')
@@ -340,7 +340,7 @@ public function applicationsList(Request $request)
     ]);
 }
 
-	
+
 		public function deleteDemande(request $request){
 			$id =STAGE::where('id_stage',$request->id)
 			->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
@@ -364,5 +364,5 @@ public function applicationsList(Request $request)
 			   ]);
 		 }
 		}
-	
-	
+
+
