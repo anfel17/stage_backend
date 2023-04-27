@@ -264,11 +264,10 @@ class EtudiantController extends Controller
 
 	public function consultOffersList(request $request) {
     	return DB::table('OFFRE')
-				// ->join('ENTREPRISE', 'OFFRE.id_entreprise', '=', 'ENTREPRISE.id_entreprise')
-				// ->join('RESPONSABLE', 'OFFRE.id_responsable', '=', 'RESPONSABLE.id_responsable')
 		        ->where('createur','=','responsable')
 		        ->select('theme','duree','description','deadline','photo_offre')
     			->get();
+				
         }
 	
 
@@ -294,46 +293,53 @@ class EtudiantController extends Controller
     }     
 
 	
-	public function applicationInfo(Request $request) {
-		$stage = DB::table('STAGE')
-			->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
-			->join('ETUDIANT','STAGE.id_etudiant','=','ETUDIANT.id_etudiant')
-			->select('theme', 'duree', 'date_debut', 'date_fin',
-				'nom_etudiant','prenom_etudiant','email','diplome','specialite',
-				'date_naissance','lieu_naissance','tel_etudiant','num_carte') 
-			->where('id_stage', '=', $request->id)
-			->first();
-		
-		$etatChef = STAGE::where('id_stage', $request->id)
-			->select(['etat_chef'])
-			->get()
-			->value('etat_chef');
-		$etatRes = STAGE::where('id_stage', $request->id)
-			->select(['etat_responsable'])
-			->get()
-			->value('etat_responsable');
-		
-		if ($etatChef === "refuse" || $etatRes === "refuse") {
-			$status = 'refused';
-		} elseif ($etatRes === "accepte") {
-			$status = 'accepted';
-		} else {
-			$status = 'pending';
-		}
-		
-		return response()->json([
-			'application_info' => $stage,
-			'status' => $status,
-		]);
-	}
+public function applicationInfo(Request $request) {
+    $stage = DB::table('STAGE')
+        ->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
+        ->join('ETUDIANT','STAGE.id_etudiant','=','ETUDIANT.id_etudiant')
+        ->select('theme', 'duree', 'date_debut', 'date_fin',
+            'nom_etudiant','prenom_etudiant','email','diplome','specialite',
+            'date_naissance','lieu_naissance','tel_etudiant','num_carte') 
+        ->where('id_stage', '=', $request->id)
+		->get();
+    return response()->json([
+        'application_info' => $stage,
+    ]);
+}
+
     
-	public function applicationsList(Request $request) {
-			return DB::table('STAGE')
-			->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
-			->where('id_etudiant', '=',$request->id)
-			->select('theme','photo_offre')
-			->get();
-	}
+public function applicationsList(Request $request)
+{
+    $applications = DB::table('STAGE')
+        ->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
+        ->where('id_etudiant', '=', $request->id)
+        ->select('STAGE.id_stage', 'theme', 'photo_offre')
+        ->get();
+
+    foreach ($applications as $application) {
+        $etatChef = STAGE::where('id_stage', $application->id_stage)
+            ->select(['etat_chef'])
+            ->get()
+            ->value('etat_chef');
+        $etatRes = STAGE::where('id_stage', $application->id_stage)
+            ->select(['etat_responsable'])
+            ->get()
+            ->value('etat_responsable');
+
+        if ($etatChef === "refuse" || $etatRes === "refuse") {
+            $application->status = 'refused';
+        } elseif ($etatRes === "accepte") {
+            $application->status = 'accepted';
+        } else {
+            $application->status = 'pending';
+        }
+    }
+
+    return response()->json([
+        'applications' => $applications,
+    ]);
+}
+
 	
 		public function deleteDemande(request $request){
 			$id =STAGE::where('id_stage',$request->id)
