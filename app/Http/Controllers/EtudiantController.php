@@ -54,7 +54,7 @@ class EtudiantController extends Controller
 				 ->join('FACULTE', 'FACULTE.id_faculte', '=', 'DEPARTEMENT.id_faculte')
 				 ->join('UNIVERSITE', 'FACULTE.id_universite', '=', 'UNIVERSITE.id_universite')
 				 ->where('id_etudiant', '=',$request->id )
-				 ->select(['nom_etudiant','prenom_etudiant','email',
+				 ->select(['id_etudiant','nom_etudiant','prenom_etudiant','email',
 				 'password','diplome','specialite','photo_etudiant',
 				 'date_naissance','lieu_naissance','tel_etudiant','num_carte',
 				 'nom_faculte','nom_universite','nom_departement'])
@@ -308,6 +308,39 @@ public function applicationInfo(Request $request) {
 }
 
 
+// public function applicationsList(Request $request)
+// {
+//     $applications = DB::table('STAGE')
+//         ->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
+//         ->where('id_etudiant', '=', $request->id)
+//         ->select('STAGE.id_stage', 'theme', 'photo_offre')
+//         ->get();
+
+//     foreach ($applications as $application) {
+//         $etatChef = STAGE::where('id_stage', $application->id_stage)
+//             ->select(['etat_chef'])
+//             ->get()
+//             ->value('etat_chef');
+//         $etatRes = STAGE::where('id_stage', $application->id_stage)
+//             ->select(['etat_responsable'])
+//             ->get()
+//             ->value('etat_responsable');
+
+//         if ($etatChef === "refuse" || $etatRes === "refuse") {
+//             $application->status = 'refused';
+//         } elseif ($etatRes === "accepte") {
+//             $application->status = 'accepted';
+//         } else {
+//             $application->status = 'pending';
+//         }
+//     }
+
+//     return response()->json([
+//         'applications' => $applications,
+//     ]);
+// }
+
+
 public function applicationsList(Request $request)
 {
     $applications = DB::table('STAGE')
@@ -315,6 +348,8 @@ public function applicationsList(Request $request)
         ->where('id_etudiant', '=', $request->id)
         ->select('STAGE.id_stage', 'theme', 'photo_offre')
         ->get();
+
+    $modifiedApplications = [];
 
     foreach ($applications as $application) {
         $etatChef = STAGE::where('id_stage', $application->id_stage)
@@ -326,18 +361,20 @@ public function applicationsList(Request $request)
             ->get()
             ->value('etat_responsable');
 
+        $modifiedApplication = $application;
+
         if ($etatChef === "refuse" || $etatRes === "refuse") {
-            $application->status = 'refused';
+            $modifiedApplication->status = 'refused';
         } elseif ($etatRes === "accepte") {
-            $application->status = 'accepted';
+            $modifiedApplication->status = 'accepted';
         } else {
-            $application->status = 'pending';
+            $modifiedApplication->status = 'pending';
         }
+
+        $modifiedApplications[] = $modifiedApplication;
     }
 
-    return response()->json([
-        'applications' => $applications,
-    ]);
+    return response()->json($modifiedApplications);
 }
 
 
