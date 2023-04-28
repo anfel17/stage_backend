@@ -17,34 +17,48 @@ use App\Models\Responsable;
 use App\Models\Stage;
 use App\Models\Universite;
 
+use Illuminate\Support\Facades\Auth;
+
+use Illuminate\Support\Facades\Hash;
+
 class EtudiantController extends Controller
 {
 
-	public function createAccount(request $request){
+	public function createAccount(Request $request){
 
+		$etudiantExist = ETUDIANT::where('email', $request->email)->exists();
+    if ($etudiantExist) {
+        return response()->json(['error' => 'The provided email address is already associated with an existing account'], 400);
+    }
 		$Dep = DB::table('DEPARTEMENT')
 				->where('DEPARTEMENT.nom_departement','=',$request->depName)
 				->value('id_departement');
-
-
-		 ETUDIANT::insert(['nom_etudiant' => $request->firstName,
-		 'prenom_etudiant' => $request->lastName,
-		 'email' => $request->email,
-		 'password'=>$request->pswd,
-		 'photo_etudiant' => $request->img,
-		 'date_naissance' => $request->birthDate,
-		 'lieu_naissance' => $request->birthPlace,
-		 'tel_etudiant' => $request->tel,
-		 'num_carte' => $request->cardNumber,
-		 'diplome' => $request->diplome,
-		 'specialite' => $request->specialite,
-		 'id_departement'=>$Dep]);
-
-
-		 return response()->json([
-					'msg' => 'account created succesfuly',
-			 ]);
+	
+		$user = ETUDIANT::create([
+			'nom_etudiant' => $request->firstName,
+			'prenom_etudiant' => $request->lastName,
+			'email' => $request->email,
+			'password'=>Hash::make($request->pswd),
+			'photo_etudiant' => $request->img,
+			'date_naissance' => $request->birthDate,
+			'lieu_naissance' => $request->birthPlace,
+			'tel_etudiant' => $request->tel,
+			'num_carte' => $request->cardNumber,
+			'diplome' => $request->diplome,
+			'specialite' => $request->specialite,
+			'id_departement'=>$Dep
+		]);
+	
+		$token = $user->createToken('Token Name')->accessToken;
+	
+		return response()->json([
+			'user' => $user,
+			'msg' => 'account created successfully',
+			'token' => $token
+		]);
 	}
+	
+
 
 
 	public function consultStudentAccount(request $request) {
@@ -66,7 +80,7 @@ class EtudiantController extends Controller
 
 		$Etud = Etudiant::where('id_etudiant', $request->id)->get();
 
-		 if($request->currentPassword === $Etud[0]['password']){
+		if(Hash::check($request->currentPassword, $Etud[0]['password'])){
 			  DB::table('ETUDIANT')
 			  ->where('id_etudiant','=',$request->id )
 			  ->update(['nom_etudiant'=>$request->firstName,
@@ -80,7 +94,7 @@ class EtudiantController extends Controller
 			  if($request->newPassword != "" ) {
 
 				 Etudiant::where('id_etudiant',$request->id)
-							 ->update(['password' => $request->newPassword]);
+							 ->update(['password' => Hash::make($request->newPassword)]);
 			 }
 			 }
 			 else  return response()->json([
@@ -384,7 +398,7 @@ public function applicationsList(Request $request)
 			->select('OFFRE.id_offre','id_responsable','createur')
 			->get();
 
-			$id = json_decode($id,true);
+			//$id = json_decode($id,true);
 			if($id[0]['createur']==='etudiant'){
 			OFFRE::where('id_offre',$id[0]['id_offre'])
 					  ->delete();

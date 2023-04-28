@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EtudiantController;
 use App\Http\Controllers\ResponsableController;
 use App\Http\Controllers\ChefController;
+use App\Http\Controllers\LoginController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,6 +21,10 @@ use App\Http\Controllers\ChefController;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+//login function 
+Route::post('/login', [LoginController::class, 'login']);
+Route::post('/logout', [LoginController::class, 'logout']);
 
 //Student Functions
 
@@ -108,3 +113,5 @@ Route::post('/unseenResNotifNbr', [ResponsableController::class, 'unseenResNotif
 Route::post('/seeResNotif', [ResponsableController::class, 'seeResNotif']);
 
 Route::post('/generatePDF', [ResponsableController::class, 'generatePDF']);
+
+

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use App\Mail\Email;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Hash;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -72,6 +73,7 @@ class ChefController extends Controller
     //(send email to res after account creation)
     public function createResAccount(request $request){
 		$password = Str::random(8);
+        $hashedPassword = Hash::make($password);
 	
             $responsableExist = RESPONSABLE::where('email', $request->email)->exists();
             if ($responsableExist) {
@@ -93,7 +95,7 @@ class ChefController extends Controller
             RESPONSABLE::insert(['nom_responsable' => $request->firstName ,
             'prenom_responsable' => $request->lastName,
             'email' => $request->email,
-            'password'=>$password,
+            'password'=>$hashedPassword,
             'photo_responsable' => $request->img,
             'id_entreprise' => $entrepriseId]);
 
@@ -258,15 +260,30 @@ class ChefController extends Controller
                 ->get(); 
      }
                         
-                      //zidi modifier password 
+                     
     public function changeChefInfo(request $request) {
+       $ChefD = DB::table('CHEFDEPARTEMENT')->
+                 where('id_chef', $request->id)
+                ->get();
+      $ChefD = json_decode($ChefD, true);
+          if(Hash::check($request->currentPassword, $ChefD[0]['password'])){
            DB::table('CHEFDEPARTEMENT')
                 ->where('id_chef', '=',$request->id )
                 ->join('DEPARTEMENT', 'DEPARTEMENT.id_departement', '=', 'CHEFDEPARTEMENT.id_departement')
-                ->update(['nom_chef'=> $request->nom,'prenom_chef'=> $request->prenom,
-                         'email'=> $request->email,'photo_chef'=> $request->img]);
+                ->update(['nom_chef'=> $request->lastName,
+                         'prenom_chef'=> $request->firstName,
+                         'email'=> $request->email,
+                         'photo_chef'=> $request->img]);
+                         if($request->newPassword != "" ) {
+                            DB::table('CHEFDEPARTEMENT')->where('id_chef',$request->id)
+                                        ->update(['password' => Hash::make($request->newPassword)]);
+                        }
+    
              return response()->json(['msg' => 'informations updated successfully',]);
-                         }
+                         }else  return response()->json([
+                            'msg' => 'wrong password',
+                      ]);
+          }
                      
     public function acceptRequest(request $request){
             STAGE::where('id_stage', '=',$request->id)
@@ -335,7 +352,7 @@ class ChefController extends Controller
                     ->value('email');
 
                         RESPONSABLE::where('id_responsable','=', $idRes )
-                        ->update(['password'=>$password,
+                        ->update(['password'=>Hash::make($password),
                         'is_active' =>  '1']);
 
 

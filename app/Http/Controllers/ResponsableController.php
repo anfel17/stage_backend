@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Dompdf\Dompdf;
+use Illuminate\Support\Facades\Hash;
+
 use Barryvdh\DomPDF\Facade\Pdf; 
 use App\Models\Etudiant;
 use App\Models\Attestation;
@@ -84,8 +86,8 @@ public function InfoResp(request $request) {
 public function changeInfoResp(request $request){
 
       $Resp = RESPONSABLE::where('id_responsable', $request->id)->get();
-
-	   if($request->currentMdps === $Resp[0]['password']){
+       
+	    if(Hash::check($request->currentPassword, $Resp[0]['password'])){
 
            $ENTREPRISE= DB::table('RESPONSABLE')
           ->where('id_responsable', '=',$request->id )
@@ -105,7 +107,7 @@ public function changeInfoResp(request $request){
       if($request->newPassword != "" ) {
          // The new password is valid
          RESPONSABLE::where('id_responsable',$request->id)
-                     ->update(['password' => $request->newPassword]);
+                    ->update(['password' => Hash::make($request->newPassword)]);
      } 
     }
  
