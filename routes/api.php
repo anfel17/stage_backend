@@ -34,7 +34,6 @@ Route::post('/consultStudentAccount', [EtudiantController::class, 'consultStuden
 //consultStudentAccount(id)
 Route::post('/modifyStudentAccount', [EtudiantController::class, 'modifyStudentAccount']);
 
-
 Route::post('/applyForInternship', [EtudiantController::class, 'applyForInternship']);
 //applyForInternship(dateD,dateF,idOffre,idStudent) existing internship 
 Route::post('/createApplication', [EtudiantController::class, 'createApplication']);
@@ -54,10 +53,16 @@ Route::post('/applicationsList', [EtudiantController::class, 'applicationsList']
 Route::post('/consulterDemande', [EtudiantController::class, 'consulterDemande']);
 Route::delete('/deleteDemande', [EtudiantController::class, 'deleteDemande']);
 
+
+
 //chef functions
 
 Route::get('/studentsList', [ChefController::class, 'studentsList']);
 Route::get('/offersList', [ChefController::class, 'offersList']);
+
+Route::post('/offerInfo', [ChefController::class, 'offerInfo']);
+Route::get('/requestsList', [ChefController::class, 'requestsList']);
+
 Route::get('/acceptedRequestList', [ChefController::class, 'acceptedRequestList']);
 Route::get('/refusedRequestList', [ChefController::class, 'refusedRequestList']);
 Route::get('/pendingRequestList', [ChefController::class, 'pendingRequestList']);
@@ -87,6 +92,8 @@ Route::post('/sendMotif', [ChefController::class, 'sendMotif']);
 Route::post('/getChefNotif', [ChefController::class, 'getChefNotif']);
 Route::post('/unseenChefNotifNbr', [ChefController::class, 'unseenChefNotifNbr']);
 Route::post('/seeChefNotif', [ChefController::class, 'seeChefNotif']);
+
+
 
 //responsable de stage 
 

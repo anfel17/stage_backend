@@ -37,10 +37,27 @@ class ChefController extends Controller
 				->join('ENTREPRISE', 'OFFRE.id_entreprise', '=', 'ENTREPRISE.id_entreprise')
 				->join('RESPONSABLE', 'OFFRE.id_responsable', '=', 'RESPONSABLE.id_responsable')
 		        ->where('createur','=','responsable')
-		        ->select('theme','duree','description','deadline','photo_offre','nom_entreprise','nom_responsable','prenom_responsable')
+		        ->select('theme','duree','description','deadline')
     			->get();
         }
-
+    
+    public function offerInfo(request $request) {
+        return DB::table('OFFRE')
+                ->join('ENTREPRISE', 'OFFRE.id_entreprise', '=', 'ENTREPRISE.id_entreprise')
+                ->join('RESPONSABLE', 'OFFRE.id_responsable', '=', 'RESPONSABLE.id_responsable')
+                ->where('createur','=','responsable')
+                ->where('id_offre',$request->id)
+                ->select('theme','duree','description','deadline','photo_offre','nom_entreprise','nom_responsable','prenom_responsable')
+                ->get();
+        }
+        
+    public function requestsList(request $request) {
+        return DB::table('STAGE')
+			->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
+            ->join('ETUDIANT','ETUDIANT.id_etudiant','=','STAGE.id_etudiant')
+			->select('theme','photo_offre','nom_etudiant','prenom_etudiant')
+			->get();
+    }
 
     public function acceptedRequestList(Request $request) {
 			return DB::table('STAGE')
@@ -69,8 +86,6 @@ class ChefController extends Controller
     ->get();
     }
   
-
-    //(send email to res after account creation)
     public function createResAccount(request $request){
 		$password = Str::random(8);
         $hashedPassword = Hash::make($password);
@@ -194,7 +209,6 @@ class ChefController extends Controller
                  ->update(['nom_responsable' => $request->firstName ,
                  'prenom_responsable' => $request->lastName,
                  'email' => $request->email,
-                 'password'=>$request->pswd,
                  'photo_responsable' => $request->img,
                  'id_entreprise' => $EntrepriseId]);
                      
@@ -364,7 +378,8 @@ class ChefController extends Controller
                         ->get();
 
                         $fullName = json_decode($fullName, true);
-                        Notification::insert(['destinataire' => 'responsable','id_destinataire' => $idRes,'message' => 'You have a new request from '.$fullName[0]['nom_etudiant'].' '.$fullName[0]['prenom_etudiant'].'.']);
+                        Notification::insert(['destinataire' => 'responsable','id_destinataire' => $idRes,
+                        'message' => 'You have a new request from '.$fullName[0]['nom_etudiant'].' '.$fullName[0]['prenom_etudiant'].'.']);
 
 
                         return response()->json([
