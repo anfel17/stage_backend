@@ -28,19 +28,20 @@ class ChefController extends Controller
     public function studentsList(request $request) {
     	return DB::table('NOTATION')
                 ->join('ETUDIANT','ETUDIANT.id_etudiant','=','NOTATION.id_etudiant')
-				->select('nom_etudiant','prenom_etudiant','note_totale')
+				->select('ETUDIANT.id_etudiant','nom_etudiant','prenom_etudiant','note_totale')
     			->get();
     }
+
 
     public function offersList(request $request) {
     	return DB::table('OFFRE')
 				->join('ENTREPRISE', 'OFFRE.id_entreprise', '=', 'ENTREPRISE.id_entreprise')
 				->join('RESPONSABLE', 'OFFRE.id_responsable', '=', 'RESPONSABLE.id_responsable')
 		        ->where('createur','=','responsable')
-		        ->select('theme','duree','description','deadline')
+		        ->select('theme','duree','description','deadline','photo_offre','nom_entreprise','nom_responsable','prenom_responsable')
     			->get();
         }
-    
+
     public function offerInfo(request $request) {
         return DB::table('OFFRE')
                 ->join('ENTREPRISE', 'OFFRE.id_entreprise', '=', 'ENTREPRISE.id_entreprise')
@@ -50,7 +51,7 @@ class ChefController extends Controller
                 ->select('theme','duree','description','deadline','photo_offre','nom_entreprise','nom_responsable','prenom_responsable')
                 ->get();
         }
-        
+
     public function requestsList(request $request) {
         return DB::table('STAGE')
 			->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
@@ -72,9 +73,10 @@ class ChefController extends Controller
         return DB::table('STAGE')
         ->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
         ->join('ETUDIANT','ETUDIANT.id_etudiant','=','STAGE.id_etudiant')
-        ->select('theme','photo_offre','nom_etudiant','prenom_etudiant')
+        ->select('id_stage','theme','photo_offre','nom_etudiant','prenom_etudiant','email')
         ->where('etat_chef','=','enAttente')
         ->get();
+
     }
 
      public function refusedRequestList(Request $request) {
@@ -85,11 +87,11 @@ class ChefController extends Controller
     ->where('etat_chef','=','refuse')
     ->get();
     }
-  
+
     public function createResAccount(request $request){
 		$password = Str::random(8);
         $hashedPassword = Hash::make($password);
-	
+
             $responsableExist = RESPONSABLE::where('email', $request->email)->exists();
             if ($responsableExist) {
             return response()->json(['error' => 'The provided email address is already associated with an existing account'], 400);
@@ -100,13 +102,13 @@ class ChefController extends Controller
             $entreprise = ENTREPRISE::where('nom_entreprise', $request->nom)->first();
             $entrepriseId = $entreprise->id_entreprise;
         }else{
-            $entrepriseId = DB::table('ENTREPRISE') 
+            $entrepriseId = DB::table('ENTREPRISE')
             ->insertGetId(['nom_entreprise'=>$request->nom,
             'addresse_entreprise'=>$request->adrs,
             'tel_entreprise'=>$request->tel,
             ]);
         }
-            
+
             RESPONSABLE::insert(['nom_responsable' => $request->firstName ,
             'prenom_responsable' => $request->lastName,
             'email' => $request->email,
@@ -119,14 +121,14 @@ class ChefController extends Controller
             return response()->json([
             'msg' => 'account created succesfuly',
             ]);
-        
+
         }
-	
-   
+
+
      public function resList(request $request) {
 		return DB::table('RESPONSABLE')
 				 ->join('ENTREPRISE', 'ENTREPRISE.id_entreprise', '=', 'RESPONSABLE.id_entreprise')
-				 ->select(['nom_responsable','prenom_responsable'])
+				 ->select(['id_responsable','nom_responsable','prenom_responsable'])
                  ->where('is_active','=','1')
 				 ->get();
 	}
@@ -165,7 +167,7 @@ class ChefController extends Controller
     }
 
 
-  
+
     public function changeStudentInfo(request $request) {
 
 		if($request->password != "" ){
@@ -185,7 +187,7 @@ class ChefController extends Controller
 			 return response()->json([
 				 'msg' => 'informations updated successfully',
 			 ]);
-			 
+
 			}
     public function changeResInfo(request $request) {
 
@@ -211,12 +213,12 @@ class ChefController extends Controller
                  'email' => $request->email,
                  'photo_responsable' => $request->img,
                  'id_entreprise' => $EntrepriseId]);
-                     
-        
+
+
                      return response()->json([
                          'msg' => 'informations updated successfully',
                      ]);
-                     
+
     }
 
     public function deleteStudent(request $request){
@@ -232,7 +234,7 @@ class ChefController extends Controller
              $EntrepriseId=DB::table('RESPONSABLE')
                 ->where('id_responsable', '=',$request->id )
                 ->value('id_entreprise');
-  
+
            ENTREPRISE::where('id_entreprise',$EntrepriseId)
                        ->delete();
 
@@ -249,32 +251,32 @@ class ChefController extends Controller
                  ->select(['message','timeStamp'])
                  ->orderby('timeStamp' , 'DESC')
                  ->get();
-     }    
-                  
+     }
+
     public function unseenChefNotifNbr(request $request){
 
             return Notification::where('id_destinataire', '=',$request->id)
                  ->where('destinataire', '=','chef')
                  ->where('is_seen', '=',0)
                  ->count();
-     }    
-                  
+     }
+
     public function seeChefNotif(request $request){
             return Notification::where('id_destinataire', '=',$request->id)
                 ->where('destinataire', '=','chef')
                 ->update(['is_seen' => 1]);
-    }     
+    }
 
     public function getChefInfo(request $request) {
-            return DB::table('CHEFDEPARTEMENT')
-                 ->join('DEPARTEMENT', 'DEPARTEMENT.id_departement', '=', 'CHEFDEPARTEMENT.id_departement')
-                                    
-                 ->select('nom_chef','prenom_chef','email','photo_chef','nom_departement')
-                ->where('id_chef', '=',$request->id )
-                ->get(); 
-     }
-                        
-                     
+        return DB::table('CHEFDEPARTEMENT')
+             ->join('DEPARTEMENT', 'DEPARTEMENT.id_departement', '=', 'CHEFDEPARTEMENT.id_departement')
+
+             ->select('id_chef','nom_chef','prenom_chef','email','photo_chef','nom_departement')
+            ->where('id_chef', '=',$request->id )
+            ->get();
+ }
+
+
     public function changeChefInfo(request $request) {
        $ChefD = DB::table('CHEFDEPARTEMENT')->
                  where('id_chef', $request->id)
@@ -292,17 +294,17 @@ class ChefController extends Controller
                             DB::table('CHEFDEPARTEMENT')->where('id_chef',$request->id)
                                         ->update(['password' => Hash::make($request->newPassword)]);
                         }
-    
+
              return response()->json(['msg' => 'informations updated successfully',]);
                          }else  return response()->json([
                             'msg' => 'wrong password',
                       ]);
           }
-                     
+
     public function acceptRequest(request $request){
             STAGE::where('id_stage', '=',$request->id)
                  ->update(['etat_chef' =>'accepte']);
-                        
+
              $fullName= STAGE::where('id_stage', '=',$request->id)
                         ->join('ETUDIANT', 'ETUDIANT.id_etudiant', '=', 'STAGE.id_etudiant')
                         ->select('nom_etudiant','prenom_etudiant')
@@ -315,20 +317,20 @@ class ChefController extends Controller
                       ->select('OFFRE.id_offre','id_responsable')
                       ->get();
 
-            $id = json_decode($id, true);           
-          
+            $id = json_decode($id, true);
+
             $email=DB::table('RESPONSABLE')
                         ->where('id_responsable', '=',$id[0]['id_responsable'])
                         ->value('email');
-                       
+
            $ResExist = RESPONSABLE::where('email', $email)
                        ->where('is_active','=','1')
                        ->first();
-                       
+
          if($ResExist){
                     $idResp=$ResExist-> id_responsable;
                     $idEntr=$ResExist-> id_entreprise;
-                    
+
                     DB::table('RESPONSABLE')
                       ->where('id_responsable','=', $id[0]['id_responsable'])
                       ->delete();
@@ -336,17 +338,17 @@ class ChefController extends Controller
                     OFFRE::where('OFFRE.id_offre', '=',$id[0]['id_offre'])
                     ->update(['id_responsable' =>$idResp,
                     'id_entreprise'=>$idEntr]);
-                           
+
         Notification::insert(['destinataire' => 'responsable','id_destinataire' => $idResp,'message' => 'You have a new request from '.$fullName[0]['nom_etudiant'].' '.$fullName[0]['prenom_etudiant'].'.']);
-                           
+
             return   response()->json(['msg' => 'information updated successfully',]);
                           }
         else{
-                           
+
             return   response()->json(['msg' => 'confirm creation',]);
 
                         }
-                                         
+
      }
 
      public function confirmCreation(request $request) {
@@ -358,10 +360,10 @@ class ChefController extends Controller
                     ->where('id_stage', '=',$request->id)
                     ->value('OFFRE.id_offre');
 
-            $idRes = DB::table('OFFRE') 
+            $idRes = DB::table('OFFRE')
                     ->where('id_offre','=',$idOffre)
                     ->value('id_responsable');
-                        
+
                     $email = RESPONSABLE::where('id_responsable','=', $idRes )
                     ->value('email');
 
@@ -412,10 +414,10 @@ class ChefController extends Controller
             STAGE::where('id_stage', '=',$request->id)
                 ->update(['motif' =>$request->motif]);
 
-                        
+
              return response()->json([
                                 'msg' => 'motif sent succesfuly',
                                 ]);
                        }
-                    
+
 }

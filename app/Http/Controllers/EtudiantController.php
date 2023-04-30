@@ -33,7 +33,7 @@ class EtudiantController extends Controller
 		$Dep = DB::table('DEPARTEMENT')
 				->where('DEPARTEMENT.nom_departement','=',$request->depName)
 				->value('id_departement');
-	
+
 		$user = ETUDIANT::create([
 			'nom_etudiant' => $request->firstName,
 			'prenom_etudiant' => $request->lastName,
@@ -48,16 +48,16 @@ class EtudiantController extends Controller
 			'specialite' => $request->specialite,
 			'id_departement'=>$Dep
 		]);
-	
+
 		$token = $user->createToken('Token Name')->accessToken;
-	
+
 		return response()->json([
 			'user' => $user,
 			'msg' => 'account created successfully',
 			'token' => $token
 		]);
 	}
-	
+
 
 
 
@@ -393,19 +393,19 @@ public function applicationsList(Request $request)
 
 
 		public function deleteDemande(request $request){
-			$id =STAGE::where('id_stage',$request->id)
-			->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
-			->select('OFFRE.id_offre','id_responsable','createur')
-			->get();
+	// $id =STAGE::where('id_stage',$request->id)
+			// ->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
+			// ->select('OFFRE.id_offre','id_responsable','createur')
+			// ->get();
 
-			//$id = json_decode($id,true);
-			if($id[0]['createur']==='etudiant'){
-			OFFRE::where('id_offre',$id[0]['id_offre'])
-					  ->delete();
+			// //$id = json_decode($id,true);
+			// if($id[0]['createur']==='etudiant'){
+			// OFFRE::where('id_offre',$id[0]['id_offre'])
+			// 		  ->delete();
 
-		    RESPONSABLE::where('id_responsable',$id[0]['id_responsable'])
-					  ->delete();
-			}
+		    // RESPONSABLE::where('id_responsable',$id[0]['id_responsable'])
+			// 		  ->delete();
+			// }
 
 			STAGE::where('id_stage',$request->id)
 					  ->delete();
