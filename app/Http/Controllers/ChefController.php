@@ -48,7 +48,7 @@ class ChefController extends Controller
                 ->join('RESPONSABLE', 'OFFRE.id_responsable', '=', 'RESPONSABLE.id_responsable')
                 ->where('createur','=','responsable')
                 ->where('id_offre',$request->id)
-                ->select('theme','duree','description','deadline','photo_offre','nom_entreprise','nom_responsable','prenom_responsable')
+                ->select('theme','duree','description','deadline','photo_offre','nom_entreprise','addresse_entreprise','nom_responsable','prenom_responsable')
                 ->get();
         }
 
@@ -56,7 +56,7 @@ class ChefController extends Controller
         return DB::table('STAGE')
 			->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
             ->join('ETUDIANT','ETUDIANT.id_etudiant','=','STAGE.id_etudiant')
-			->select('theme','photo_offre','nom_etudiant','prenom_etudiant')
+			->select('id_stage','theme','photo_offre','nom_etudiant','prenom_etudiant','email')
 			->get();
     }
 
@@ -64,8 +64,8 @@ class ChefController extends Controller
 			return DB::table('STAGE')
 			->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
             ->join('ETUDIANT','ETUDIANT.id_etudiant','=','STAGE.id_etudiant')
-			->select('theme','photo_offre','nom_etudiant','prenom_etudiant')
-            ->where('etat_chef','=','accepte')
+			->select('id_stage','theme','photo_offre','nom_etudiant','prenom_etudiant','email')
+            ->where('id_stage','etat_chef','=','accepte')
 			->get();
 	}
 
@@ -83,7 +83,7 @@ class ChefController extends Controller
     return DB::table('STAGE')
     ->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
     ->join('ETUDIANT','ETUDIANT.id_etudiant','=','STAGE.id_etudiant')
-    ->select('theme','photo_offre','nom_etudiant','prenom_etudiant')
+    ->select('id_stage','theme','photo_offre','nom_etudiant','prenom_etudiant','email')
     ->where('etat_chef','=','refuse')
     ->get();
     }
@@ -133,11 +133,11 @@ class ChefController extends Controller
 				 ->get();
 	}
 
-    public function GetResInfo(request $request) {
+    public function resInfo(request $request) {
 		return DB::table('RESPONSABLE')
                 ->where('id_responsable','=',$request->id)
 				 ->join('ENTREPRISE', 'ENTREPRISE.id_entreprise', '=', 'RESPONSABLE.id_entreprise')
-				 ->select(['nom_responsable','prenom_responsable','nom_entreprise','tel_entreprise','addresse_entreprise'])
+				 ->select(['id_responsable','nom_responsable','prenom_responsable','nom_entreprise','tel_entreprise','addresse_entreprise'])
 				 ->get();
 	}
 
@@ -147,14 +147,14 @@ class ChefController extends Controller
 				 ->join('FACULTE', 'FACULTE.id_faculte', '=', 'DEPARTEMENT.id_faculte')
 				 ->join('UNIVERSITE', 'FACULTE.id_universite', '=', 'UNIVERSITE.id_universite')
 				 ->where('id_etudiant', '=',$request->id )
-				 ->select(['nom_etudiant','prenom_etudiant','email','password','diplome','specialite','photo_etudiant',
+				 ->select(['id_etudiant','nom_etudiant','prenom_etudiant','email','password','diplome','specialite','photo_etudiant',
 				 'date_naissance','lieu_naissance','tel_etudiant','num_carte','nom_faculte','nom_universite','nom_departement'])
 				 ->get();
 	}
 
     public function studentList(request $request) {
 		return DB::table('ETUDIANT')
-				 ->select(['nom_etudiant','prenom_etudiant'])
+				 ->select(['id_etudiant','nom_etudiant','prenom_etudiant'])
 				 ->get();
 	}
     public function listeStagiairs(request $request) {
@@ -182,7 +182,8 @@ class ChefController extends Controller
               'specialite'=>$request->newSpecialite,
 			  'tel_etudiant'=>$request->newTel,
               'date_naissance'=>$request->newDate,
-              'lieu_naissance'=>$request->newLieu]);
+              'lieu_naissance'=>$request->newLieu,
+              'num_carte'=>$request->newCartNum]);
 
 			 return response()->json([
 				 'msg' => 'informations updated successfully',

@@ -288,7 +288,7 @@ class EtudiantController extends Controller
 	public function getStudentNotif(request $request){
 	  return Notification::where('id_destinataire', '=',$request->id)
 	   ->where('destinataire', '=','etudiant')
-	   ->select(['message','timeStamp'])
+	   ->select(['id_notification','message','timeStamp','is_seen'])
 	   ->orderby('timeStamp' , 'DESC')
 	   ->get();
     }
@@ -393,10 +393,10 @@ public function applicationsList(Request $request)
 
 
 		public function deleteDemande(request $request){
-	// $id =STAGE::where('id_stage',$request->id)
-			// ->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
-			// ->select('OFFRE.id_offre','id_responsable','createur')
-			// ->get();
+	$id =STAGE::where('id_stage',$request->id)
+			->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
+			->select('OFFRE.id_offre','id_responsable','createur')
+			->get();
 
 			// //$id = json_decode($id,true);
 			// if($id[0]['createur']==='etudiant'){
