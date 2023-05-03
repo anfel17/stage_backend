@@ -56,7 +56,7 @@ class ChefController extends Controller
         return DB::table('STAGE')
 			->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
             ->join('ETUDIANT','ETUDIANT.id_etudiant','=','STAGE.id_etudiant')
-			->select('id_stage','theme','photo_offre','nom_etudiant','prenom_etudiant','email')
+			->select('id_stage','theme','photo_offre','nom_etudiant','prenom_etudiant','email','etat_chef')
 			->get();
     }
 
@@ -64,8 +64,8 @@ class ChefController extends Controller
 			return DB::table('STAGE')
 			->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
             ->join('ETUDIANT','ETUDIANT.id_etudiant','=','STAGE.id_etudiant')
-			->select('id_stage','theme','photo_offre','nom_etudiant','prenom_etudiant','email')
-            ->where('id_stage','etat_chef','=','accepte')
+			->select('id_stage','theme','photo_offre','nom_etudiant','prenom_etudiant','email','etat_chef')
+            ->where('etat_chef','=','accepte')
 			->get();
 	}
 
@@ -73,7 +73,7 @@ class ChefController extends Controller
         return DB::table('STAGE')
         ->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
         ->join('ETUDIANT','ETUDIANT.id_etudiant','=','STAGE.id_etudiant')
-        ->select('id_stage','theme','photo_offre','nom_etudiant','prenom_etudiant','email')
+        ->select('id_stage','theme','photo_offre','nom_etudiant','prenom_etudiant','email','etat_chef')
         ->where('etat_chef','=','enAttente')
         ->get();
 
@@ -83,7 +83,7 @@ class ChefController extends Controller
     return DB::table('STAGE')
     ->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
     ->join('ETUDIANT','ETUDIANT.id_etudiant','=','STAGE.id_etudiant')
-    ->select('id_stage','theme','photo_offre','nom_etudiant','prenom_etudiant','email')
+    ->select('id_stage','theme','photo_offre','nom_etudiant','prenom_etudiant','email','etat_chef')
     ->where('etat_chef','=','refuse')
     ->get();
     }
