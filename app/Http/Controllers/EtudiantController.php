@@ -391,6 +391,74 @@ public function applicationsList(Request $request)
     return response()->json($modifiedApplications);
 }
 
+    //filtring applications
+    public function getAcceptedApplications(Request $request)
+{
+    $applications = DB::table('STAGE')
+        ->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
+        ->where('id_etudiant', '=', $request->id)
+        ->where('etat_responsable', '=', 'accepte')
+        ->select('STAGE.id_stage', 'theme', 'photo_offre')
+        ->get();
+
+    $modifiedApplications = [];
+
+    foreach ($applications as $application) {
+        $modifiedApplication = $application;
+        $modifiedApplication->status = 'accepted';
+        $modifiedApplications[] = $modifiedApplication;
+    }
+
+    return response()->json($modifiedApplications);
+}
+
+public function getRefusedApplications(Request $request)
+{
+    $applications = DB::table('STAGE')
+        ->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
+        ->where('id_etudiant', '=', $request->id)
+        ->where(function($query) {
+            $query->where('etat_responsable', '=', 'refuse')
+                  ->orWhere('etat_chef', '=', 'refuse');
+        })
+        ->select('STAGE.id_stage', 'theme', 'photo_offre')
+        ->get();
+
+    $modifiedApplications = [];
+
+    foreach ($applications as $application) {
+        $modifiedApplication = $application;
+        $modifiedApplication->status = 'refused';
+        $modifiedApplications[] = $modifiedApplication;
+    }
+
+    return response()->json($modifiedApplications);
+}
+
+public function getPendingApplications(Request $request)
+{
+    $applications = DB::table('STAGE')
+        ->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
+        ->where('id_etudiant', '=', $request->id)
+        ->where(function($query) {
+            $query->where('etat_responsable', '=', null)
+                  ->orWhere('etat_chef', '=', null);
+        })
+        ->select('STAGE.id_stage', 'theme', 'photo_offre')
+        ->get();
+
+    $modifiedApplications = [];
+
+    foreach ($applications as $application) {
+        $modifiedApplication = $application;
+        $modifiedApplication->status = 'pending';
+        $modifiedApplications[] = $modifiedApplication;
+    }
+
+    return response()->json($modifiedApplications);
+}
+
+
 
 		public function deleteDemande(request $request){
 	$id =STAGE::where('id_stage',$request->id)

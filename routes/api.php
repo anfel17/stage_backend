@@ -49,6 +49,9 @@ Route::post('/seeStudentNotif', [EtudiantController::class, 'seeStudentNotif']);
 
 Route::post('/applicationInfo', [EtudiantController::class, 'applicationInfo']);
 Route::post('/applicationsList', [EtudiantController::class, 'applicationsList']);
+Route::post('/getAcceptedApplications', [EtudiantController::class, 'getAcceptedApplications']);
+Route::post('/getRefusedApplications', [EtudiantController::class, 'getRefusedApplications']);
+Route::post('/getPendingApplications', [EtudiantController::class, 'getPendingApplications']);
 
 Route::post('/consulterDemande', [EtudiantController::class, 'consulterDemande']);
 Route::post('/deleteDemande', [EtudiantController::class, 'deleteDemande']);
