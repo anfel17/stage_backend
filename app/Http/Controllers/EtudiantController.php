@@ -398,14 +398,14 @@ public function applicationsList(Request $request)
 			->select('OFFRE.id_offre','id_responsable','createur')
 			->get();
 
-			// //$id = json_decode($id,true);
-			// if($id[0]['createur']==='etudiant'){
-			// OFFRE::where('id_offre',$id[0]['id_offre'])
-			// 		  ->delete();
+			// $id = json_decode($id,true);
+			if($id[0]['createur']==='etudiant'){
+			OFFRE::where('id_offre',$id[0]['id_offre'])
+					  ->delete();
 
-		    // RESPONSABLE::where('id_responsable',$id[0]['id_responsable'])
-			// 		  ->delete();
-			// }
+		    RESPONSABLE::where('id_responsable',$id[0]['id_responsable'])
+					  ->delete();
+			}
 
 			STAGE::where('id_stage',$request->id)
 					  ->delete();

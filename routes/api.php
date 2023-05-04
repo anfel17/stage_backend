@@ -22,7 +22,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-//login function 
+//login function
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout']);
 
@@ -35,7 +35,7 @@ Route::post('/consultStudentAccount', [EtudiantController::class, 'consultStuden
 Route::post('/modifyStudentAccount', [EtudiantController::class, 'modifyStudentAccount']);
 
 Route::post('/applyForInternship', [EtudiantController::class, 'applyForInternship']);
-//applyForInternship(dateD,dateF,idOffre,idStudent) existing internship 
+//applyForInternship(dateD,dateF,idOffre,idStudent) existing internship
 Route::post('/createApplication', [EtudiantController::class, 'createApplication']);
 Route::post('/modifyApplication', [EtudiantController::class, 'modifyApplication']);
 
@@ -51,7 +51,7 @@ Route::post('/applicationInfo', [EtudiantController::class, 'applicationInfo']);
 Route::post('/applicationsList', [EtudiantController::class, 'applicationsList']);
 
 Route::post('/consulterDemande', [EtudiantController::class, 'consulterDemande']);
-Route::delete('/deleteDemande', [EtudiantController::class, 'deleteDemande']);
+Route::post('/deleteDemande', [EtudiantController::class, 'deleteDemande']);
 
 
 
@@ -95,7 +95,7 @@ Route::post('/seeChefNotif', [ChefController::class, 'seeChefNotif']);
 
 
 
-//responsable de stage 
+//responsable de stage
 
 Route::post('/pendingRequests', [ResponsableController::class,'pendingRequests']);
 Route::post('/acceptedRequests', [ResponsableController::class,'acceptedRequests']);
