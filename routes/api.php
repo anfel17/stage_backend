@@ -54,6 +54,7 @@ Route::post('/getRefusedApplications', [EtudiantController::class, 'getRefusedAp
 Route::post('/getPendingApplications', [EtudiantController::class, 'getPendingApplications']);
 
 Route::post('/consulterDemande', [EtudiantController::class, 'consulterDemande']);
+Route::post('/modifyDemande', [EtudiantController::class, 'modifyDemande']);
 Route::post('/deleteDemande', [EtudiantController::class, 'deleteDemande']);
 
 

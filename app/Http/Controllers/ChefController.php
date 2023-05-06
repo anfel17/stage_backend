@@ -161,7 +161,7 @@ class ChefController extends Controller
         return DB::table('STAGE')
                 ->where('etat_responsable','accepte')
                 ->join('ETUDIANT', 'ETUDIANT.id_etudiant', '=','STAGE.id_etudiant')
-                 ->select('nom_etudiant','prenom_etudiant')
+                 ->select('ETUDIANT.id_etudiant','nom_etudiant','prenom_etudiant')
                  ->orderby('nom_etudiant', 'asc')
                  ->get();
     }

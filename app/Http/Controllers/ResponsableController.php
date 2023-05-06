@@ -7,7 +7,7 @@ use Carbon\Carbon;
 use Dompdf\Dompdf;
 use Illuminate\Support\Facades\Hash;
 
-use Barryvdh\DomPDF\Facade\Pdf; 
+use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Etudiant;
 use App\Models\Attestation;
 use App\Models\Chef;
@@ -34,7 +34,7 @@ class ResponsableController extends Controller
             ->where('id_responsable',$request->id)
             ->get();
     }
-    
+
   //consulter list des demandes acceptees
   public function acceptedRequests(Request $request) {
     return DB::table('STAGE')
@@ -81,39 +81,39 @@ public function InfoResp(request $request) {
             ->where('RESPONSABLE.id_responsable','=',$request->id)
             ->get();
  }
- 
- 
+
+
 public function changeInfoResp(request $request){
 
       $Resp = RESPONSABLE::where('id_responsable', $request->id)->get();
-       
+
 	    if(Hash::check($request->currentPassword, $Resp[0]['password'])){
 
            $ENTREPRISE= DB::table('RESPONSABLE')
           ->where('id_responsable', '=',$request->id )
           ->value("id_entreprise");
- 
-       DB::table('ENTREPRISE') 
+
+       DB::table('ENTREPRISE')
        ->where('id_entreprise','=',$ENTREPRISE)
        ->update(['nom_entreprise'=>$request->nameEntr,'tel_entreprise'=>$request->tel,
        'addresse_entreprise'=>$request->addresse]);
-       
+
       RESPONSABLE::where('id_responsable','=', $request->id)
       ->update(['nom_responsable' => $request->lastName ,'prenom_responsable' => $request->firstName,
       'email' => $request->email,
       'photo_responsable' => $request->img, "id_entreprise"=>$ENTREPRISE]);
-      
- 
+
+
       if($request->newPassword != "" ) {
          // The new password is valid
          RESPONSABLE::where('id_responsable',$request->id)
                     ->update(['password' => Hash::make($request->newPassword)]);
-     } 
+     }
     }
- 
+
     else  return response()->json(['msg' => 'wrong password']);
 	return response()->json(['msg' => 'information updated successfully',]);
- 
+
 }
 
 public function acceptRequestRes(request $request){
@@ -130,7 +130,7 @@ public function acceptRequestRes(request $request){
 
     Notification::insert(['destinataire' => 'etudiant',
     'id_destinataire' =>$info[0]['id_etudiant'],
-    'message' => 'your request of '.$info[0]['theme'].' has been accepted']); 
+    'message' => 'your request of '.$info[0]['theme'].' has been accepted']);
    }
 
 public function refuseRequestRes(request $request) {
@@ -158,7 +158,7 @@ public function refuseRequestRes(request $request) {
             'msg' => 'motif sent succesfuly',
             ]);
    }
-   
+
    public function marquerNotes(request $request) {
     $idStage = STAGE::where('id_etudiant', $request->id)->value('id_stage');
     $data = [
@@ -172,18 +172,18 @@ public function refuseRequestRes(request $request) {
         'note_totale' => $request->discipline + $request->attitude + $request->initiative +
          $request->capacite + $request->connaissance,
     ];
-    
+
     Notation::insert($data);
 
      return response()->json([
             'msg' => 'information inserted succesfuly',
             ]);
    }
- 
+
    public function marquerPresence(request $request) {
     $idStage = STAGE::where('id_etudiant', $request->id)->value('id_stage');
 
-    Notation::insert(['id_etudiant' => $request->id,
+    PRESENCE::insert(['id_etudiant' => $request->id,
     'id_stage' => $idStage,
     'date' => $request->date,
     'heure_entree' => $request->heureE,
@@ -196,11 +196,11 @@ public function refuseRequestRes(request $request) {
    }
 
    public function creerOffreRes(request $request) {
-    $entrepriseId = DB::table('RESPONSABLE') 
+    $entrepriseId = DB::table('RESPONSABLE')
                  ->where('id_responsable', $request->id)
                  ->value('id_entreprise');
 
-    $offreId = DB::table('OFFRE') 
+    $offreId = DB::table('OFFRE')
                  ->insert(['theme'=>$request->theme,'duree'=>$request->duree,
                  'deadline'=>$request->deadline,
                  'description'=>$request->description,
@@ -221,7 +221,7 @@ public function deleteOffer(request $request){
                   ]);
 }
 public function modifyOffer(request $request){
-            DB::table('OFFRE') 
+            DB::table('OFFRE')
 			->where('id_offre', '=',$idOffre )
 			->update(['theme'=>$request->theme,
 				'duree'=>$request->duree,
@@ -237,23 +237,23 @@ public function getResNotif(request $request){
      ->select(['message','timeStamp'])
      ->orderby('timeStamp' , 'DESC')
      ->get();
-}    
+}
 
       public function unseenResNotifNbr(request $request){
           return Notification::where('id_destinataire', '=',$request->id)
           ->where('destinataire', '=','responsable')
            ->where('is_seen', '=',0)
            ->count();
-      }    
+      }
 
       public function seeResNotif(request $request){
           return Notification::where('id_destinataire', '=',$request->id)
           ->where('destinataire', '=','responsable')
            ->update(['is_seen' => 1]);
-      }    
-      
+      }
+
       public function generatePDF(request $request) {
-        
+
         $array = DB::table('ETUDIANT')
 				 ->where('ETUDIANT.id_etudiant', '=',$request->id )
                  ->join('STAGE', 'ETUDIANT.id_etudiant', '=', 'STAGE.id_etudiant')
@@ -284,13 +284,13 @@ public function getResNotif(request $request){
         'currentDate' => $currentDate
 
     ];
-                 
-           
+
+
         $pdf = PDF::loadView('pdf',$data_array);
-        
-                                
+
+
         // Output the generated PDF to Browser
         return $pdf->stream();
-                            } 
+                            }
 
 }

@@ -308,18 +308,18 @@ class EtudiantController extends Controller
 
 
 public function applicationInfo(Request $request) {
-    $stage = DB::table('STAGE')
+    return DB::table('STAGE')
         ->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
-        ->join('ETUDIANT','STAGE.id_etudiant','=','ETUDIANT.id_etudiant')
-        ->select('theme', 'duree', 'date_debut', 'date_fin',
-            'nom_etudiant','prenom_etudiant','email','diplome','specialite',
-            'date_naissance','lieu_naissance','tel_etudiant','num_carte')
+		->join('RESPONSABLE','RESPONSABLE.id_responsable','=','OFFRE.id_responsable')
+		->join('ENTREPRISE','ENTREPRISE.id_entreprise','=','OFFRE.id_entreprise')
+        ->select('id_stage','theme', 'duree', 'date_debut', 'date_fin','createur','description','email','nom_responsable',
+		'prenom_responsable','nom_entreprise','addresse_entreprise','tel_entreprise')
         ->where('id_stage', '=', $request->id)
 		->get();
-    return response()->json([
-        'application_info' => $stage,
-    ]);
+
 }
+
+
 
 
 // public function applicationsList(Request $request)
