@@ -28,11 +28,23 @@ class ResponsableController extends Controller
         return DB::table('STAGE')
             ->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
             ->join('ETUDIANT','ETUDIANT.id_etudiant','=','STAGE.id_etudiant')
-            ->select('theme','photo_offre','nom_etudiant','prenom_etudiant')
+            ->select('id_stage','theme','photo_offre','nom_etudiant','prenom_etudiant','email','etat_responsable','etat_chef')
             ->where('etat_chef','=','accepte')
             ->where('etat_responsable','=','enAttente')
             ->where('id_responsable',$request->id)
             ->get();
+    }
+
+
+    public function requestsListRes(request $request) {
+        return DB::table('STAGE')
+			->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
+            ->join('ETUDIANT','ETUDIANT.id_etudiant','=','STAGE.id_etudiant')
+			->select('id_stage','theme','photo_offre','nom_etudiant','prenom_etudiant','email','etat_responsable','etat_chef')
+            //'etat_responsable' != null
+            ->where('id_responsable',$request->id )
+            ->where('etat_chef','=','accepte')
+			->get();
     }
 
   //consulter list des demandes acceptees
@@ -40,8 +52,9 @@ class ResponsableController extends Controller
     return DB::table('STAGE')
     ->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
     ->join('ETUDIANT','ETUDIANT.id_etudiant','=','STAGE.id_etudiant')
-    ->select('theme','photo_offre','nom_etudiant','prenom_etudiant')
+    ->select('id_stage','theme','photo_offre','nom_etudiant','prenom_etudiant','email','etat_responsable','etat_chef')
     ->where('etat_responsable','=','accepte')
+    ->where('etat_chef','=','accepte')
     ->where('id_responsable',$request->id)
     ->get();
 }
@@ -50,8 +63,9 @@ public function refusedRequests(Request $request) {
     return DB::table('OFFRE')
         ->join('STAGE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
         ->join('ETUDIANT','ETUDIANT.id_etudiant','=','STAGE.id_etudiant')
-        ->select('theme','photo_offre','nom_etudiant','prenom_etudiant')
+        ->select('id_stage','theme','photo_offre','nom_etudiant','prenom_etudiant','email','etat_responsable','etat_chef')
         ->where('etat_responsable','=','refuse')
+        ->where('etat_chef','=','accepte')
         ->where('id_responsable',$request->id)
         ->get();
 }
@@ -67,7 +81,7 @@ public function listeStagiairs(request $request) {
             ->where('etat_responsable','accepte')
             ->where('id_offre', $idOffre)
             ->join('ETUDIANT', 'ETUDIANT.id_etudiant', '=','STAGE.id_etudiant')
-             ->select('nom_etudiant','prenom_etudiant')
+             ->select('ETUDIANT.id_etudiant','nom_etudiant','prenom_etudiant')
              ->orderby('nom_etudiant', 'asc')
              ->get();
 }
@@ -265,7 +279,7 @@ public function getResNotif(request $request){
                  'nom_responsable','prenom_responsable','addresse_entreprise','theme','diplome','nom_entreprise'])
 				 ->get();
 
-        $array = json_decode($array, true);
+        // $array = json_decode($array, true);
         $currentDate= Carbon::now()->format('Y-m-d');
 
         $data_array = ['firstName' => $array[0]['nom_etudiant'],
@@ -281,16 +295,64 @@ public function getResNotif(request $request){
         'prenomRes' => $array[0]['prenom_responsable'],
         'addresseEntr' => $array[0]['addresse_entreprise'],
         'nomEntr' => $array[0]['nom_entreprise'],
-        'currentDate' => $currentDate
+        //university
 
-    ];
+        'currentDate' => $currentDate];
 
 
-        $pdf = PDF::loadView('pdf',$data_array);
+
+
+        // $pdf = PDF::loadView('pdf',$data_array);
+        //return data
+        return response()->json([
+            'data' => $data_array,
+            'msg' => 'information inserted succesfuly',
+            ]);
 
 
         // Output the generated PDF to Browser
-        return $pdf->stream();
+        // return $pdf->stream();
                             }
 
+// "    public function generatePDF(Request $request)
+// {
+//     $array = DB::table('ETUDIANT')
+//         ->where('ETUDIANT.id_etudiant', '=', $request->id)
+//         ->join('STAGE', 'ETUDIANT.id_etudiant', '=', 'STAGE.id_etudiant')
+//         ->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
+//         ->join('RESPONSABLE', 'RESPONSABLE.id_responsable', '=', 'OFFRE.id_responsable')
+//         ->join('ENTREPRISE', 'OFFRE.id_entreprise', '=', 'ENTREPRISE.id_entreprise')
+//         ->select(['nom_etudiant', 'prenom_etudiant', 'date_debut', 'date_fin', 'date_naissance', 'lieu_naissance', 'specialite', 'nom_responsable', 'prenom_responsable', 'addresse_entreprise', 'theme', 'diplome', 'nom_entreprise'])
+//         ->get();
+
+//     $currentDate = Carbon::now()->format('Y-m-d');
+
+//     $data_array = [
+//         'firstName' => $array[0]->nom_etudiant,
+//         'theme' => $array[0]->theme,
+//         'lastName' => $array[0]->prenom_etudiant,
+//         'dateDeb' => $array[0]->date_debut,
+//         'dateFin' => $array[0]->date_fin,
+//         'dateNaissance' => $array[0]->date_naissance,
+//         'lieuNaissance' => $array[0]->lieu_naissance,
+//         'specialite' => $array[0]->specialite,
+//         'diplome' => $array[0]->diplome,
+//         'nomRes' => $array[0]->nom_responsable,
+//         'prenomRes' => $array[0]->prenom_responsable,
+//         'addresseEntr' => $array[0]->addresse_entreprise,
+//         'nomEntr' => $array[0]->nom_entreprise,
+//         'currentDate' => $currentDate
+//     ];
+
+//     // return response()->json([
+//     //     'data' => $data_array,
+//     //     'msg' => 'information inserted succesfuly',
+//     // ]);
+
+//     //
+// }
+
+
+// }
 }
+

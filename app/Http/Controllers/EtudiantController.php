@@ -113,6 +113,7 @@ class EtudiantController extends Controller
 				->insert(['date_debut'=>$request->dateD,
 						  'date_fin'=>$request->dateF,
 						  'etat_chef'=>"enAttente",
+                          'etat_responsable'=>"enAttente",
 						  'id_etudiant'=>$request->idStudent,
 						  'id_offre'=>$request->idOffre]);
 
@@ -168,6 +169,7 @@ class EtudiantController extends Controller
 				->insert(['date_debut'=>$request->dateD,
 				'date_fin'=>$request->dateF,
 				'etat_chef'=>"enAttente",
+                'etat_responsable'=>"enAttente",
 				'id_etudiant'=>$request->idStudent,
 				'id_offre'=>$offreId]);
 

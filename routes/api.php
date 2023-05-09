@@ -104,6 +104,8 @@ Route::post('/seeChefNotif', [ChefController::class, 'seeChefNotif']);
 Route::post('/pendingRequests', [ResponsableController::class,'pendingRequests']);
 Route::post('/acceptedRequests', [ResponsableController::class,'acceptedRequests']);
 Route::post('/refusedRequests', [ResponsableController::class,'refusedRequests']);
+Route::post('/requestsListRes', [ResponsableController::class,'requestsListRes']);
+
 Route::post('/InfoResp', [ResponsableController::class,'InfoResp']);
 Route::post('/changeInfoResp', [ResponsableController::class,'changeInfoResp']);
 
