@@ -117,11 +117,12 @@ Route::post('/marquerNotes', [ResponsableController::class,'marquerNotes']);
 Route::post('/marquerPresence', [ResponsableController::class,'marquerPresence']);
 
 Route::post('/creerOffreRes', [ResponsableController::class,'creerOffreRes']);
-Route::delete('/deleteOffer', [ResponsableController::class,'deleteOffer']);
+Route::post('/deleteOffer', [ResponsableController::class,'deleteOffer']);
 Route::post('/modifyOffer', [ResponsableController::class,'modifyOffer']);
+Route::post('/offerInfoRes', [ResponsableController::class,'offerInfoRes']);
 
 
-Route::post('/getResNotif', [ResponsableController::class, 'getResfNotif']);
+Route::post('/getResNotif', [ResponsableController::class, 'getResNotif']);
 Route::post('/unseenResNotifNbr', [ResponsableController::class, 'unseenResNotifNbr']);
 Route::post('/seeResNotif', [ResponsableController::class, 'seeResNotif']);
 

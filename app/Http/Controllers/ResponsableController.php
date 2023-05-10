@@ -236,19 +236,41 @@ public function deleteOffer(request $request){
 }
 public function modifyOffer(request $request){
             DB::table('OFFRE')
-			->where('id_offre', '=',$idOffre )
+			->where('id_offre', '=',$request->id)
 			->update(['theme'=>$request->theme,
-				'duree'=>$request->duree,
-				'deadline'=>$request->deadline]);
+				'duree'=>$request->duree,'duree'=>$request->duree,
+                'deadline'=>$request->deadline,
+                'description'=>$request->description,
+                'photo_offre'=>$request->photo]);
 
            return response()->json([
                     'msg' => 'offer deleted successfully',
                 ]);
 }
+
+//get Offer info by id in one object
+public function offerInfoRes(Request $request)
+{
+    $offer = OFFRE::where('id_offre', '=', $request->id)
+        ->select('theme', 'duree', 'deadline', 'description', 'photo_offre')
+        ->first();
+
+    if ($offer) {
+        return response()->json(
+            $offer
+        );
+    } else {
+        return response()->json([
+            'message' => 'Offer not found'
+        ], 404);
+    }
+}
+
+
 public function getResNotif(request $request){
     return Notification::where('id_destinataire', '=',$request->id)
      ->where('destinataire', '=','responsable')
-     ->select(['message','timeStamp'])
+     ->select(["id_notification",'is_seen','message','timeStamp'])
      ->orderby('timeStamp' , 'DESC')
      ->get();
 }
@@ -274,12 +296,18 @@ public function getResNotif(request $request){
                  ->join('OFFRE','OFFRE.id_offre', '=','STAGE.id_offre')
                  ->join('RESPONSABLE','RESPONSABLE.id_responsable', '=','OFFRE.id_responsable')
                  ->join('ENTREPRISE','OFFRE.id_entreprise', '=','ENTREPRISE.id_entreprise')
+                 ->join('DEPARTEMENT', 'DEPARTEMENT.id_departement', '=', 'ETUDIANT.id_departement')
+				 ->join('FACULTE', 'FACULTE.id_faculte', '=', 'DEPARTEMENT.id_faculte')
+				 ->join('UNIVERSITE', 'FACULTE.id_universite', '=', 'UNIVERSITE.id_universite')
 				 ->select(['nom_etudiant','prenom_etudiant','date_debut','date_fin',
                  'date_naissance','lieu_naissance','specialite',
-                 'nom_responsable','prenom_responsable','addresse_entreprise','theme','diplome','nom_entreprise'])
+                 'nom_responsable','prenom_responsable','addresse_entreprise','theme','diplome','nom_entreprise','nom_universite','addresse_universite'])
 				 ->get();
 
-        // $array = json_decode($array, true);
+
+
+
+        $array = json_decode($array, true);
         $currentDate= Carbon::now()->format('Y-m-d');
 
         $data_array = ['firstName' => $array[0]['nom_etudiant'],
@@ -296,7 +324,8 @@ public function getResNotif(request $request){
         'addresseEntr' => $array[0]['addresse_entreprise'],
         'nomEntr' => $array[0]['nom_entreprise'],
         //university
-
+        'uniNom' => $array[0]['nom_universite'],
+        'univAdrs' => $array[0]['addresse_universite'],
         'currentDate' => $currentDate];
 
 
@@ -314,45 +343,6 @@ public function getResNotif(request $request){
         // return $pdf->stream();
                             }
 
-// "    public function generatePDF(Request $request)
-// {
-//     $array = DB::table('ETUDIANT')
-//         ->where('ETUDIANT.id_etudiant', '=', $request->id)
-//         ->join('STAGE', 'ETUDIANT.id_etudiant', '=', 'STAGE.id_etudiant')
-//         ->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
-//         ->join('RESPONSABLE', 'RESPONSABLE.id_responsable', '=', 'OFFRE.id_responsable')
-//         ->join('ENTREPRISE', 'OFFRE.id_entreprise', '=', 'ENTREPRISE.id_entreprise')
-//         ->select(['nom_etudiant', 'prenom_etudiant', 'date_debut', 'date_fin', 'date_naissance', 'lieu_naissance', 'specialite', 'nom_responsable', 'prenom_responsable', 'addresse_entreprise', 'theme', 'diplome', 'nom_entreprise'])
-//         ->get();
 
-//     $currentDate = Carbon::now()->format('Y-m-d');
-
-//     $data_array = [
-//         'firstName' => $array[0]->nom_etudiant,
-//         'theme' => $array[0]->theme,
-//         'lastName' => $array[0]->prenom_etudiant,
-//         'dateDeb' => $array[0]->date_debut,
-//         'dateFin' => $array[0]->date_fin,
-//         'dateNaissance' => $array[0]->date_naissance,
-//         'lieuNaissance' => $array[0]->lieu_naissance,
-//         'specialite' => $array[0]->specialite,
-//         'diplome' => $array[0]->diplome,
-//         'nomRes' => $array[0]->nom_responsable,
-//         'prenomRes' => $array[0]->prenom_responsable,
-//         'addresseEntr' => $array[0]->addresse_entreprise,
-//         'nomEntr' => $array[0]->nom_entreprise,
-//         'currentDate' => $currentDate
-//     ];
-
-//     // return response()->json([
-//     //     'data' => $data_array,
-//     //     'msg' => 'information inserted succesfuly',
-//     // ]);
-
-//     //
-// }
-
-
-// }
 }
 

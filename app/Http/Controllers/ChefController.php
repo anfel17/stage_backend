@@ -249,7 +249,7 @@ class ChefController extends Controller
     public function getChefNotif(request $request){
                return Notification::where('id_destinataire', '=',$request->id)
                  ->where('destinataire', '=','chef')
-                 ->select(['message','timeStamp'])
+                 ->select(['id_notification','message','timeStamp','is_seen'])
                  ->orderby('timeStamp' , 'DESC')
                  ->get();
      }
