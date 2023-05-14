@@ -69,7 +69,7 @@ class EtudiantController extends Controller
 				 ->join('UNIVERSITE', 'FACULTE.id_universite', '=', 'UNIVERSITE.id_universite')
 				 ->where('id_etudiant', '=',$request->id )
 				 ->select(['id_etudiant','nom_etudiant','prenom_etudiant','email',
-				 'password','diplome','specialite','photo_etudiant',
+				 'diplome','specialite','photo_etudiant',
 				 'date_naissance','lieu_naissance','tel_etudiant','num_carte',
 				 'nom_faculte','nom_universite','nom_departement'])
 				 ->get();
@@ -316,8 +316,10 @@ public function applicationInfo(Request $request) {
 		->join('ENTREPRISE','ENTREPRISE.id_entreprise','=','OFFRE.id_entreprise')
         ->select('id_stage','theme', 'duree', 'date_debut', 'date_fin','createur','description','email','nom_responsable',
 		'prenom_responsable','nom_entreprise','addresse_entreprise','tel_entreprise')
-        ->where('id_stage', '=', $request->id)
+        ->where('STAGE.id_stage', '=', $request->id)
 		->get();
+
+
 
 }
 

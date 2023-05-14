@@ -12,22 +12,22 @@ use Illuminate\Support\Str;
 
 class LoginController extends Controller
 {
-   
+
     public function login(Request $request)
     {
         $credentials = $request->only('email', 'password');
-        
+
         // Attempt authentication for each user type
         if (Auth::guard('etudiant')->attempt($credentials)) {
             $user = Auth::guard('etudiant')->user();
             if ($user) {
                 $token = $user->createToken('Token Name')->accessToken;
                 return response()->json([
+                    'user_type'=>'student',
                     'status' => 'success',
                     'user' => $user,
                     'authorisation' => [
                         'token' => $token,
-                        'type' => 'bearer',
                     ]
                 ]);
             }
@@ -36,11 +36,12 @@ class LoginController extends Controller
             if ($user) {
                 $token = $user->createToken('Token Name')->accessToken;
                 return response()->json([
+                    'user_type'=>'supervisor',
                     'status' => 'success',
                     'user' => $user,
                     'authorisation' => [
                         'token' => $token,
-                        'type' => 'bearer',
+                        
                     ]
                 ]);
             }
@@ -49,6 +50,7 @@ class LoginController extends Controller
             if ($user) {
                 $token = $user->createToken('Token Name')->accessToken;
                 return response()->json([
+                    'user_type'=>'admin',
                     'status' => 'success',
                     'user' => $user,
                     'authorisation' => [
@@ -58,7 +60,7 @@ class LoginController extends Controller
                 ]);
             }
         } else {
-            return "Authentication failed for all user types"; 
+            return "Authentication failed for all user types";
         }
     }
     public function logout(Request $request)
@@ -72,5 +74,5 @@ class LoginController extends Controller
         }
         return response()->json(['message' => 'Successfully logged out']);
     }
-    
+
 }

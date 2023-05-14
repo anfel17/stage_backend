@@ -28,7 +28,7 @@ class ChefController extends Controller
     public function studentsList(request $request) {
     	return DB::table('NOTATION')
                 ->join('ETUDIANT','ETUDIANT.id_etudiant','=','NOTATION.id_etudiant')
-				->select('ETUDIANT.id_etudiant','nom_etudiant','prenom_etudiant','note_totale')
+				->select('ETUDIANT.id_etudiant','nom_etudiant','prenom_etudiant','note_totale','ETUDIANT.photo_etudiant')
     			->get();
     }
 
@@ -128,7 +128,7 @@ class ChefController extends Controller
      public function resList(request $request) {
 		return DB::table('RESPONSABLE')
 				 ->join('ENTREPRISE', 'ENTREPRISE.id_entreprise', '=', 'RESPONSABLE.id_entreprise')
-				 ->select(['id_responsable','nom_responsable','prenom_responsable'])
+				 ->select(['id_responsable','nom_responsable','prenom_responsable','photo_responsable'])
                  ->where('is_active','=','1')
 				 ->get();
 	}
@@ -154,14 +154,14 @@ class ChefController extends Controller
 
     public function studentList(request $request) {
 		return DB::table('ETUDIANT')
-				 ->select(['id_etudiant','nom_etudiant','prenom_etudiant'])
+				 ->select(['id_etudiant','nom_etudiant','prenom_etudiant','photo_etudiant'])
 				 ->get();
 	}
     public function listeStagiairs(request $request) {
         return DB::table('STAGE')
                 ->where('etat_responsable','accepte')
                 ->join('ETUDIANT', 'ETUDIANT.id_etudiant', '=','STAGE.id_etudiant')
-                 ->select('ETUDIANT.id_etudiant','nom_etudiant','prenom_etudiant')
+                 ->select('ETUDIANT.id_etudiant','nom_etudiant','prenom_etudiant','ETUDIANT.photo_etudiant')
                  ->orderby('nom_etudiant', 'asc')
                  ->get();
     }
