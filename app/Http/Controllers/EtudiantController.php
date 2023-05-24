@@ -192,7 +192,7 @@ class EtudiantController extends Controller
 			]);
 	}
 
-		public function modifyApplication(request $request) {
+		public function modifyDemande(request $request) {
 			$etatChef = STAGE::where('id_stage', $request->id)
 			->value('etat_chef');
 
@@ -214,9 +214,12 @@ class EtudiantController extends Controller
 			$ajouterPar = OFFRE::where('id_offre', $idOffre)
 			->value('createur');
 
-			DB::table('STAGE')
+            DB::table('STAGE')
 			->where('id_stage', '=',$request->id )
-			->update(['date_debut'=>$request->dateD,'date_fin'=>$request->dateF]);
+			->update(['date_debut'=>$request->dateD,'date_fin'=>$request->dateF,
+			'etat_chef'=>'enAttente',
+		'etat_responsable'=>'enAttente',
+	'motif'=>NULL]);
 
 			if($ajouterPar==="etudiant"){
 				DB::table('RESPONSABLE')
@@ -445,8 +448,8 @@ public function getPendingApplications(Request $request)
         ->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
         ->where('id_etudiant', '=', $request->id)
         ->where(function($query) {
-            $query->where('etat_responsable', '=', null)
-                  ->orWhere('etat_chef', '=', null);
+            $query->where('etat_responsable', '=', 'enAttente')
+                  ->orWhere('etat_chef', '=', 'enAttente');
         })
         ->select('STAGE.id_stage', 'theme', 'photo_offre')
         ->get();
@@ -461,6 +464,7 @@ public function getPendingApplications(Request $request)
 
     return response()->json($modifiedApplications);
 }
+
 
 
 

@@ -37,7 +37,8 @@ Route::post('/modifyStudentAccount', [EtudiantController::class, 'modifyStudentA
 Route::post('/applyForInternship', [EtudiantController::class, 'applyForInternship']);
 //applyForInternship(dateD,dateF,idOffre,idStudent) existing internship
 Route::post('/createApplication', [EtudiantController::class, 'createApplication']);
-Route::post('/modifyApplication', [EtudiantController::class, 'modifyApplication']);
+//modifyApp
+
 
 Route::post('/consultAttendance', [EtudiantController::class, 'consultAttendance']);
 Route::post('/checkMarks', [EtudiantController::class, 'checkMarks']);
@@ -96,6 +97,8 @@ Route::post('/sendMotif', [ChefController::class, 'sendMotif']);
 Route::post('/getChefNotif', [ChefController::class, 'getChefNotif']);
 Route::post('/unseenChefNotifNbr', [ChefController::class, 'unseenChefNotifNbr']);
 Route::post('/seeChefNotif', [ChefController::class, 'seeChefNotif']);
+
+Route::post('/studentApplicationInfo', [ChefController::class, 'studentApplicationInfo']);
 
 
 

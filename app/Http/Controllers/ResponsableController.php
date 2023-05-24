@@ -24,17 +24,50 @@ use App\Models\Universite;
 
 class ResponsableController extends Controller
 {
+    // public function pendingRequests(Request $request) {
+    //     return DB::table('STAGE')
+    //         ->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
+    //         ->join('ETUDIANT','ETUDIANT.id_etudiant','=','STAGE.id_etudiant')
+    //         ->select('id_stage','theme','photo_offre','nom_etudiant','prenom_etudiant','email','etat_responsable','etat_chef')
+    //         ->where('etat_chef','=','accepte')
+    //         ->where('etat_responsable','=','enAttente')
+    //         ->where('id_responsable',$request->id)
+    //         ->get();
+    // }
+
     public function pendingRequests(Request $request) {
-        return DB::table('STAGE')
-            ->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
+        $info = DB::table('STAGE')
             ->join('ETUDIANT','ETUDIANT.id_etudiant','=','STAGE.id_etudiant')
-            ->select('id_stage','theme','photo_offre','nom_etudiant','prenom_etudiant','email','etat_responsable','etat_chef')
-            ->where('etat_chef','=','accepte')
-            ->where('etat_responsable','=','enAttente')
-            ->where('id_responsable',$request->id)
-            ->get();
+            ->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
+            ->where('id_responsable', $request->id)
+            ->select('ETUDIANT.id_etudiant')
+            ->distinct()
+            ->get()
+            ->pluck('id_etudiant');
+
+    $stage_counts = [];
+    foreach ($info as $id_etudiant) {
+        $count = DB::table('STAGE')
+            ->where('id_etudiant', $id_etudiant)
+            ->where('etat_responsable', 'accepte')
+            ->count();
+        $stage_counts[$id_etudiant] = $count;
     }
 
+    foreach ($stage_counts as $id_etudiant => $count) {
+        if ($count == 0) {
+
+    return DB::table('STAGE')
+                ->join('OFFRE', 'OFFRE.id_offre', '=', 'STAGE.id_offre')
+                ->join('ETUDIANT','ETUDIANT.id_etudiant','=','STAGE.id_etudiant')
+                ->select('theme','photo_offre','nom_etudiant','prenom_etudiant')
+                ->where('etat_chef','=','accepte')
+                ->where('etat_responsable','=','enAttente')
+                ->where('id_responsable',$request->id)
+                ->get();
+        }
+          }
+        }
 
     public function requestsListRes(request $request) {
         return DB::table('STAGE')
@@ -90,7 +123,7 @@ public function InfoResp(request $request) {
     return DB::table('RESPONSABLE')
             ->join('ENTREPRISE', 'RESPONSABLE.id_entreprise', '=',
              'ENTREPRISE.id_entreprise')
-		    ->select('nom_entreprise','tel_entreprise','addresse_entreprise',
+		    ->select('id_responsable','nom_entreprise','tel_entreprise','addresse_entreprise',
             'nom_responsable','prenom_responsable','email','photo_responsable')
             ->where('RESPONSABLE.id_responsable','=',$request->id)
             ->get();
